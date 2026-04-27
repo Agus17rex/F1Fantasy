@@ -1,0 +1,111 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── F1 Design System ───────────────────────────────────────────────────── */
+:root {
+  --f1-red:     #E8002D;
+  --f1-dark:    #15151E;
+  --f1-gray:    #38383F;
+  --f1-light:   #F5F5F5;
+  --f1-accent:  #FF1801;
+
+  /* Constructor colors */
+  --team-redbull:    #3671C6;
+  --team-mercedes:   #27F4D2;
+  --team-ferrari:    #E8002D;
+  --team-mclaren:    #FF8000;
+  --team-alpine:     #FF87BC;
+  --team-aston:      #358C75;
+  --team-williams:   #64C4FF;
+  --team-alphatauri: #5E8FAA;
+  --team-alfa:       #C92D4B;
+  --team-haas:       #B6BABD;
+}
+
+/* ─── Base ───────────────────────────────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: var(--f1-dark);
+  color: white;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Components ─────────────────────────────────────────────────────────── */
+@layer components {
+  /* Botones */
+  .btn-primary {
+    @apply bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-5 rounded-lg transition-colors duration-200;
+  }
+
+  .btn-secondary {
+    @apply bg-zinc-700 hover:bg-zinc-600 text-white font-semibold py-2 px-5 rounded-lg transition-colors duration-200;
+  }
+
+  .btn-outline {
+    @apply border border-zinc-600 hover:border-red-500 text-zinc-300 hover:text-white font-semibold py-2 px-5 rounded-lg transition-colors duration-200;
+  }
+
+  /* Cards */
+  .card {
+    @apply bg-zinc-900 border border-zinc-800 rounded-xl p-5;
+  }
+
+  .card-dark {
+    @apply bg-zinc-950 border border-zinc-800 rounded-xl p-5;
+  }
+
+  /* Inputs */
+  .input {
+    @apply w-full bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500
+           rounded-lg px-4 py-2.5 focus:outline-none focus:border-red-500 transition-colors duration-200;
+  }
+
+  /* Badges de estado */
+  .badge-upcoming {
+    @apply bg-blue-500/20 text-blue-400 text-xs font-medium px-2 py-0.5 rounded-full;
+  }
+
+  .badge-active {
+    @apply bg-green-500/20 text-green-400 text-xs font-medium px-2 py-0.5 rounded-full;
+  }
+
+  .badge-scored {
+    @apply bg-zinc-500/20 text-zinc-400 text-xs font-medium px-2 py-0.5 rounded-full;
+  }
+
+  /* Tabla de clasificación */
+  .standings-row {
+    @apply flex items-center gap-4 py-3 border-b border-zinc-800 last:border-0 hover:bg-zinc-800/50 transition-colors px-2 rounded;
+  }
+
+  /* Nav link */
+  .nav-link {
+    @apply flex items-center gap-2 px-3 py-2 text-zinc-400 hover:text-white
+           rounded-lg hover:bg-zinc-800 transition-colors duration-200 text-sm font-medium;
+  }
+
+  .nav-link-active {
+    @apply nav-link text-white bg-zinc-800;
+  }
+}
+
+/* ─── Animations ─────────────────────────────────────────────────────────── */
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease forwards;
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 6px; }
+::-webkit-scrollbar-track { background: #15151E; }
+::-webkit-scrollbar-thumb { background: #38383F; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #E8002D; }
