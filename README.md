@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # F1 Fantasy League — TFG DAW
 
 Proyecto de Trabajo de Fin de Grado para el ciclo superior de Desarrollo de Aplicaciones Web.
@@ -95,3 +96,6 @@ DB_PASSWORD=secret
 SANCTUM_STATEFUL_DOMAINS=localhost:5173
 FRONTEND_URL=http://localhost:5173
 ```
+=======
+# F1Fantasy
+>>>>>>> 7a8766b94ec917ba1bf8328c7226c6114358d424
