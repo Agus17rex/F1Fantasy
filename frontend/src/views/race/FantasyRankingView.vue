@@ -32,26 +32,26 @@
       <!-- ── Pilotos ── -->
       <div v-if="tabActiva === 'pilotos'" class="card divide-y divide-zinc-800/60">
         <div v-for="(piloto, idx) in pilotosFiltrados" :key="piloto.id"
-          class="flex items-center gap-4 py-3 first:pt-0 last:pb-0">
+          class="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
           <!-- Posición -->
-          <div class="w-8 text-center flex-shrink-0">
+          <div class="w-7 text-center flex-shrink-0">
             <span v-if="idx === 0" class="text-xl">🥇</span>
             <span v-else-if="idx === 1" class="text-xl">🥈</span>
             <span v-else-if="idx === 2" class="text-xl">🥉</span>
             <span v-else class="text-zinc-600 text-sm font-mono font-bold">{{ idx + 1 }}</span>
           </div>
-          <!-- Barra de color + nombre -->
-          <div class="w-1 h-9 rounded-full flex-shrink-0"
-            :style="{ backgroundColor: piloto.escuderia?.color || '#555' }"></div>
+          <!-- Avatar piloto -->
+          <AvatarPiloto :piloto="piloto" size="lg" />
           <div class="flex-1 min-w-0">
-            <p class="text-white text-sm font-semibold">
-              {{ piloto.first_name }} <span class="font-black">{{ piloto.last_name }}</span>
+            <p class="text-white text-sm font-semibold truncate">
+              {{ piloto.nombre }} <span class="font-black">{{ piloto.apellido }}</span>
             </p>
-            <p class="text-zinc-500 text-xs">{{ piloto.escuderia?.name || '—' }}</p>
+            <p class="text-zinc-500 text-xs flex items-center gap-1.5 mt-0.5">
+              <LogoEscuderia :escuderia="piloto.escuderia" size="xs" />
+              {{ piloto.escuderia?.nombre || '—' }}
+            </p>
           </div>
-          <!-- Precio -->
-          <p class="text-zinc-500 text-xs flex-shrink-0 hidden sm:block">{{ M(piloto.price) }}</p>
-          <!-- Puntos + barra -->
+          <p class="text-zinc-500 text-xs flex-shrink-0 hidden sm:block">{{ M(piloto.precio) }}</p>
           <div class="flex items-center gap-3 flex-shrink-0">
             <div class="w-24 hidden md:block">
               <div class="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
@@ -74,20 +74,19 @@
       <!-- ── Escuderías ── -->
       <div v-if="tabActiva === 'escuderias'" class="card divide-y divide-zinc-800/60">
         <div v-for="(esc, idx) in escuderiasFiltradas" :key="esc.id"
-          class="flex items-center gap-4 py-3 first:pt-0 last:pb-0">
-          <div class="w-8 text-center flex-shrink-0">
+          class="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+          <div class="w-7 text-center flex-shrink-0">
             <span v-if="idx === 0" class="text-xl">🥇</span>
             <span v-else-if="idx === 1" class="text-xl">🥈</span>
             <span v-else-if="idx === 2" class="text-xl">🥉</span>
             <span v-else class="text-zinc-600 text-sm font-mono font-bold">{{ idx + 1 }}</span>
           </div>
-          <div class="w-4 h-4 rounded-full flex-shrink-0"
-            :style="{ backgroundColor: esc.color || '#555' }"></div>
+          <LogoEscuderia :escuderia="esc" size="lg" />
           <div class="flex-1 min-w-0">
-            <p class="text-white text-sm font-bold">{{ esc.name }}</p>
-            <p class="text-zinc-500 text-xs">{{ esc.nationality }}</p>
+            <p class="text-white text-sm font-bold">{{ esc.nombre }}</p>
+            <p class="text-zinc-500 text-xs">{{ esc.nacionalidad }}</p>
           </div>
-          <p class="text-zinc-500 text-xs flex-shrink-0 hidden sm:block">{{ M(esc.price) }}</p>
+          <p class="text-zinc-500 text-xs flex-shrink-0 hidden sm:block">{{ M(esc.precio) }}</p>
           <div class="flex items-center gap-3 flex-shrink-0">
             <div class="w-24 hidden md:block">
               <div class="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
@@ -110,22 +109,22 @@
       <!-- ── Directores ── -->
       <div v-if="tabActiva === 'directores'" class="card divide-y divide-zinc-800/60">
         <div v-for="(dir, idx) in directoresFiltrados" :key="dir.id"
-          class="flex items-center gap-4 py-3 first:pt-0 last:pb-0">
-          <div class="w-8 text-center flex-shrink-0">
+          class="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+          <div class="w-7 text-center flex-shrink-0">
             <span v-if="idx === 0" class="text-xl">🥇</span>
             <span v-else-if="idx === 1" class="text-xl">🥈</span>
             <span v-else-if="idx === 2" class="text-xl">🥉</span>
             <span v-else class="text-zinc-600 text-sm font-mono font-bold">{{ idx + 1 }}</span>
           </div>
-          <div class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center flex-shrink-0 text-sm"
-            :style="dir.escuderia ? { borderLeft: '3px solid ' + dir.escuderia.color } : {}">
-            🎩
-          </div>
+          <AvatarDirector :director="dir" size="lg" />
           <div class="flex-1 min-w-0">
-            <p class="text-white text-sm font-semibold">{{ dir.name }}</p>
-            <p class="text-zinc-500 text-xs">{{ dir.escuderia?.name || '—' }}</p>
+            <p class="text-white text-sm font-semibold">{{ dir.nombre }}</p>
+            <p class="text-zinc-500 text-xs flex items-center gap-1.5 mt-0.5">
+              <LogoEscuderia :escuderia="dir.escuderia" size="xs" />
+              {{ dir.escuderia?.nombre || '—' }}
+            </p>
           </div>
-          <p class="text-zinc-500 text-xs flex-shrink-0 hidden sm:block">{{ M(dir.price) }}</p>
+          <p class="text-zinc-500 text-xs flex-shrink-0 hidden sm:block">{{ M(dir.precio) }}</p>
           <div class="flex items-center gap-3 flex-shrink-0">
             <div class="w-24 hidden md:block">
               <div class="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
@@ -150,6 +149,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { f1Service } from '@/services/f1Service'
+import AvatarPiloto from '@/components/media/AvatarPiloto.vue'
+import LogoEscuderia from '@/components/media/LogoEscuderia.vue'
+import AvatarDirector from '@/components/media/AvatarDirector.vue'
 
 const cargando   = ref(false)
 const busqueda   = ref('')
@@ -171,33 +173,31 @@ const sinDatos = computed(() =>
   escuderias.value.every(e => e.total_fantasy_pts === 0)
 )
 
-// Máximos para las barras de progreso
 const maxPtsPilotos    = computed(() => Math.max(1, ...pilotos.value.map(p => p.total_fantasy_pts)))
 const maxPtsEscuderias = computed(() => Math.max(1, ...escuderias.value.map(e => e.total_fantasy_pts)))
 const maxPtsDirectores = computed(() => Math.max(1, ...directores.value.map(d => d.total_fantasy_pts)))
 
-// Filtros con búsqueda
 const pilotosFiltrados = computed(() => {
   const q = busqueda.value.toLowerCase()
   return pilotos.value.filter(p =>
     !q ||
-    p.first_name?.toLowerCase().includes(q) ||
-    p.last_name?.toLowerCase().includes(q) ||
-    p.escuderia?.name?.toLowerCase().includes(q)
+    p.nombre?.toLowerCase().includes(q) ||
+    p.apellido?.toLowerCase().includes(q) ||
+    p.escuderia?.nombre?.toLowerCase().includes(q)
   )
 })
 
 const escuderiasFiltradas = computed(() => {
   const q = busqueda.value.toLowerCase()
-  return escuderias.value.filter(e => !q || e.name?.toLowerCase().includes(q))
+  return escuderias.value.filter(e => !q || e.nombre?.toLowerCase().includes(q))
 })
 
 const directoresFiltrados = computed(() => {
   const q = busqueda.value.toLowerCase()
   return directores.value.filter(d =>
     !q ||
-    d.name?.toLowerCase().includes(q) ||
-    d.escuderia?.name?.toLowerCase().includes(q)
+    d.nombre?.toLowerCase().includes(q) ||
+    d.escuderia?.nombre?.toLowerCase().includes(q)
   )
 })
 

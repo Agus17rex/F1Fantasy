@@ -8,6 +8,7 @@ use App\Models\Escuderia;
 use App\Models\Piloto;
 use App\Models\Carrera;
 use App\Models\ResultadoCarrera;
+use App\Support\Traducciones;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -22,11 +23,6 @@ class ServicioApiF1
         $this->temporada = config('services.f1_api.season', date('Y'));
     }
 
-    /**
-     * Realiza una petición GET a la API.
-     * En local desactivamos la verificación SSL porque Windows
-     * no siempre tiene el certificado de la API instalado.
-     */
     private function peticion(string $url): \Illuminate\Http\Client\Response
     {
         $cliente = app()->isLocal()
@@ -60,38 +56,31 @@ class ServicioApiF1
             Piloto::updateOrCreate(
                 ['api_id' => $datosPiloto['driverId']],
                 [
-                    'code'          => $datosPiloto['code'] ?? null,
-                    'number'        => $datosPiloto['permanentNumber'] ?? null,
-                    'first_name'    => $datosPiloto['givenName'],
-                    'last_name'     => $datosPiloto['familyName'],
-                    'nationality'   => $datosPiloto['nationality'] ?? null,
-                    'date_of_birth' => $datosPiloto['dateOfBirth'] ?? null,
-                    'is_active'     => true,
+                    'codigo'           => $datosPiloto['code'] ?? null,
+                    'numero'           => $datosPiloto['permanentNumber'] ?? null,
+                    'nombre'           => $datosPiloto['givenName'],
+                    'apellido'         => $datosPiloto['familyName'],
+                    'nacionalidad'     => Traducciones::nacionalidad($datosPiloto['nationality'] ?? null),
+                    'fecha_nacimiento' => $datosPiloto['dateOfBirth'] ?? null,
+                    'activo'           => true,
                 ]
             );
             $sincronizados++;
         }
 
-        // Vinculamos cada piloto con su escudería usando la clasificación de pilotos,
-        // que sí incluye a qué constructor pertenece cada uno
         $this->vincularPilotosEscuderias($temporada);
-
-        // Recalculamos precios basados en la clasificación actual
         $this->actualizarPreciosPilotos($temporada);
 
         return $sincronizados;
     }
 
     /**
-     * Obtiene la clasificación de pilotos y usa esa información para asignar
-     * el constructor_id correcto a cada piloto en nuestra base de datos.
-     * Los pilotos que NO aparezcan en la clasificación se marcan como reservas.
+     * Asigna a cada piloto su escudería actual (a partir de la clasificación).
      */
     private function vincularPilotosEscuderias(?int $temporada = null): void
     {
         $clasificacion = $this->obtenerClasificacionPilotos($temporada);
 
-        // IDs de pilotos que aparecen en la clasificación (son titulares)
         $pilotosTitulares = collect($clasificacion)->pluck('Driver.driverId')->all();
 
         foreach ($clasificacion as $entrada) {
@@ -100,15 +89,14 @@ class ServicioApiF1
 
             if ($piloto && $escuderia) {
                 $piloto->update([
-                    'constructor_id' => $escuderia->id,
-                    'es_reserva'     => false,
+                    'escuderia_id' => $escuderia->id,
+                    'es_reserva'   => false,
                 ]);
             }
         }
 
-        // Los pilotos que NO están en la clasificación no son titulares → desactivar
         Piloto::whereNotIn('api_id', $pilotosTitulares)
-            ->update(['is_active' => false, 'es_reserva' => true]);
+            ->update(['activo' => false, 'es_reserva' => true]);
     }
 
     // ─── Escuderías ───────────────────────────────────────────────────────────
@@ -135,15 +123,14 @@ class ServicioApiF1
             Escuderia::updateOrCreate(
                 ['api_id' => $datosEscuderia['constructorId']],
                 [
-                    'name'        => $datosEscuderia['name'],
-                    'nationality' => $datosEscuderia['nationality'] ?? null,
-                    'is_active'   => true,
+                    'nombre'       => $datosEscuderia['name'],
+                    'nacionalidad' => Traducciones::nacionalidad($datosEscuderia['nationality'] ?? null),
+                    'activa'       => true,
                 ]
             );
             $sincronizados++;
         }
 
-        // Recalculamos precios de escuderías y directores
         $this->actualizarPreciosEscuderias($temporada);
 
         return $sincronizados;
@@ -173,25 +160,24 @@ class ServicioApiF1
             $circuito = Circuito::updateOrCreate(
                 ['api_id' => $datosCarrera['Circuit']['circuitId']],
                 [
-                    'name'     => $datosCarrera['Circuit']['circuitName'],
-                    'location' => $datosCarrera['Circuit']['Location']['locality'] ?? null,
-                    'country'  => $datosCarrera['Circuit']['Location']['country'] ?? null,
-                    'lat'      => $datosCarrera['Circuit']['Location']['lat'] ?? null,
-                    'lng'      => $datosCarrera['Circuit']['Location']['long'] ?? null,
+                    'nombre'    => $datosCarrera['Circuit']['circuitName'],
+                    'ubicacion' => $datosCarrera['Circuit']['Location']['locality'] ?? null,
+                    'pais'      => $datosCarrera['Circuit']['Location']['country'] ?? null,
+                    'lat'       => $datosCarrera['Circuit']['Location']['lat'] ?? null,
+                    'lng'       => $datosCarrera['Circuit']['Location']['long'] ?? null,
                 ]
             );
 
             Carrera::updateOrCreate(
                 ['api_id' => $datosCarrera['season'] . '_' . $datosCarrera['round']],
                 [
-                    'season'     => (int) $datosCarrera['season'],
-                    'round'      => (int) $datosCarrera['round'],
-                    'name'       => $datosCarrera['raceName'],
-                    'circuit_id' => $circuito->id,
-                    'date'       => $datosCarrera['date'],
-                    // La API devuelve la hora con 'Z' al final (ej: "15:00:00Z"), la quitamos
-                    'time'       => isset($datosCarrera['time']) ? rtrim($datosCarrera['time'], 'Z') : null,
-                    'status'     => 'upcoming',
+                    'temporada'   => (int) $datosCarrera['season'],
+                    'ronda'       => (int) $datosCarrera['round'],
+                    'nombre'      => $datosCarrera['raceName'],
+                    'circuito_id' => $circuito->id,
+                    'fecha'       => $datosCarrera['date'],
+                    'hora'        => isset($datosCarrera['time']) ? rtrim($datosCarrera['time'], 'Z') : null,
+                    'estado'      => 'upcoming',
                 ]
             );
             $sincronizados++;
@@ -226,10 +212,9 @@ class ServicioApiF1
 
     public function sincronizarResultadosCarrera(Carrera $carrera): int
     {
-        $resultados    = $this->obtenerResultadosCarrera($carrera->season, $carrera->round);
-        $clasificacion = $this->obtenerResultadosClasificacion($carrera->season, $carrera->round);
+        $resultados    = $this->obtenerResultadosCarrera($carrera->temporada, $carrera->ronda);
+        $clasificacion = $this->obtenerResultadosClasificacion($carrera->temporada, $carrera->ronda);
 
-        // Mapa de driverId => posición en clasificación para buscarlo rápido
         $posicionesClasificacion = [];
         foreach ($clasificacion as $entrada) {
             $idPiloto = $entrada['Driver']['driverId'];
@@ -247,15 +232,15 @@ class ServicioApiF1
             }
 
             ResultadoCarrera::updateOrCreate(
-                ['race_id' => $carrera->id, 'driver_id' => $piloto->id],
+                ['carrera_id' => $carrera->id, 'piloto_id' => $piloto->id],
                 [
-                    'constructor_id'      => $escuderia->id,
-                    'grid_position'       => $resultado['grid'] ?? null,
-                    'finish_position'     => $resultado['position'] ?? null,
-                    'qualifying_position' => $posicionesClasificacion[$resultado['Driver']['driverId']] ?? null,
-                    'status'              => $resultado['status'] ?? 'Unknown',
-                    'points_official'     => (int) ($resultado['points'] ?? 0),
-                    'fastest_lap'         => isset($resultado['FastestLap']['rank']) && $resultado['FastestLap']['rank'] == 1,
+                    'escuderia_id'           => $escuderia->id,
+                    'posicion_salida'        => $resultado['grid'] ?? null,
+                    'posicion_final'         => $resultado['position'] ?? null,
+                    'posicion_clasificacion' => $posicionesClasificacion[$resultado['Driver']['driverId']] ?? null,
+                    'estado'                 => Traducciones::statusResultado($resultado['status'] ?? 'Unknown'),
+                    'puntos_oficiales'       => (int) ($resultado['points'] ?? 0),
+                    'vuelta_rapida'          => isset($resultado['FastestLap']['rank']) && $resultado['FastestLap']['rank'] == 1,
                 ]
             );
             $sincronizados++;
@@ -292,19 +277,10 @@ class ServicioApiF1
 
     // ─── Precios dinámicos ────────────────────────────────────────────────────
 
-    /**
-     * Recalcula los precios de pilotos, escuderías y directores en función de
-     * la clasificación actual del campeonato.
-     *
-     * Escala lineal:  posición 1  → 80 000 000 €
-     *                 última pos. → 10 000 000 €
-     */
     public function actualizarPrecios(?int $temporada = null): void
     {
         $this->actualizarPreciosPilotos($temporada);
         $this->actualizarPreciosEscuderias($temporada);
-        // Los directores se actualizan dentro de actualizarPreciosEscuderias
-        // porque su precio se calcula a partir del de su escudería
     }
 
     private function actualizarPreciosPilotos(?int $temporada = null): void
@@ -323,7 +299,7 @@ class ServicioApiF1
             $precio   = $this->escalarPrecio($posicion, $total);
 
             Piloto::where('api_id', $entrada['Driver']['driverId'])
-                  ->update(['price' => $precio]);
+                  ->update(['precio' => $precio]);
         }
 
         Log::info("Precios de pilotos actualizados ({$total} titulares)");
@@ -351,32 +327,21 @@ class ServicioApiF1
                 continue;
             }
 
-            $escuderia->update(['price' => $precio]);
+            $escuderia->update(['precio' => $precio]);
 
-            // El director de esta escudería recibe un precio = 80 % del de la escudería
-            // (mismo orden en clasificación, rango ligeramente inferior)
-            DirectorEquipo::where('constructor_id', $escuderia->id)
-                          ->update(['price' => (int) round($precio * 0.8)]);
+            DirectorEquipo::where('escuderia_id', $escuderia->id)
+                          ->update(['precio' => (int) round($precio * 0.8)]);
         }
 
         Log::info("Precios de escuderías y directores actualizados ({$total} equipos)");
     }
 
-    /**
-     * Escala lineal entre $minM y $maxM millones según la posición en la clasificación.
-     *
-     * Ejemplo con 20 pilotos:
-     *   posición  1 → 80 M
-     *   posición 20 → 10 M
-     *   posición 10 → ~46 M
-     */
     private function escalarPrecio(int $posicion, int $total, int $minM = 10, int $maxM = 80): int
     {
         if ($total <= 1) {
             return (int) round(($minM + $maxM) / 2 * 1_000_000);
         }
 
-        // fraccion = 1.0 cuando posicion=1, fraccion = 0.0 cuando posicion=$total
         $fraccion = ($total - $posicion) / ($total - 1);
 
         return (int) round(($minM + $fraccion * ($maxM - $minM)) * 1_000_000);

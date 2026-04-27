@@ -10,53 +10,53 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class EquipoFantasy extends Model
 {
-    protected $table = 'fantasy_teams';
+    protected $table = 'equipos_fantasy';
 
-    protected $fillable = ['user_id', 'league_id', 'name', 'remaining_budget', 'total_points'];
+    protected $fillable = ['usuario_id', 'liga_id', 'nombre', 'presupuesto_restante', 'puntos_totales'];
 
     public function usuario(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'usuario_id');
     }
 
     public function liga(): BelongsTo
     {
-        return $this->belongsTo(Liga::class, 'league_id');
+        return $this->belongsTo(Liga::class, 'liga_id');
     }
 
     public function miembroLiga(): HasOne
     {
-        return $this->hasOne(MiembroLiga::class, 'user_id', 'user_id')
-            ->where('league_id', $this->league_id);
+        return $this->hasOne(MiembroLiga::class, 'usuario_id', 'usuario_id')
+            ->where('liga_id', $this->liga_id);
     }
 
-    // Pilotos activos (titular / banquillo)
+    // Pilotos activos del equipo
     public function pilotos(): BelongsToMany
     {
-        return $this->belongsToMany(Piloto::class, 'fantasy_team_drivers', 'fantasy_team_id', 'driver_id')
-            ->withPivot('role', 'selected_at')
-            ->wherePivotNull('removed_at');
+        return $this->belongsToMany(Piloto::class, 'equipos_fantasy_pilotos', 'equipo_fantasy_id', 'piloto_id')
+            ->withPivot('rol', 'fecha_seleccion')
+            ->wherePivotNull('fecha_baja');
     }
 
     // Escudería activa del equipo
     public function escuderias(): BelongsToMany
     {
-        return $this->belongsToMany(Escuderia::class, 'fantasy_team_constructors', 'fantasy_team_id', 'constructor_id')
-            ->withPivot('selected_at')
-            ->wherePivotNull('removed_at');
+        return $this->belongsToMany(Escuderia::class, 'equipos_fantasy_escuderias', 'equipo_fantasy_id', 'escuderia_id')
+            ->withPivot('fecha_seleccion')
+            ->wherePivotNull('fecha_baja');
     }
 
     // Director activo del equipo
     public function directores(): BelongsToMany
     {
-        return $this->belongsToMany(DirectorEquipo::class, 'fantasy_team_principals', 'fantasy_team_id', 'team_principal_id')
-            ->withPivot('selected_at')
-            ->wherePivotNull('removed_at');
+        return $this->belongsToMany(DirectorEquipo::class, 'equipos_fantasy_directores', 'equipo_fantasy_id', 'director_id')
+            ->withPivot('fecha_seleccion')
+            ->wherePivotNull('fecha_baja');
     }
 
     public function puntosPorCarrera(): HasMany
     {
-        return $this->hasMany(PuntosEquipoCarrera::class, 'fantasy_team_id');
+        return $this->hasMany(PuntosEquipoCarrera::class, 'equipo_fantasy_id');
     }
 
     // ─── Validación ───────────────────────────────────────────────────────────

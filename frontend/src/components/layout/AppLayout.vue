@@ -64,11 +64,11 @@
         <!-- Avatar + nombre → perfil -->
         <RouterLink to="/perfil" class="flex items-center gap-3 p-2 rounded-lg hover:bg-zinc-800 transition-colors cursor-pointer group">
           <div class="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center text-sm font-bold flex-shrink-0">
-            {{ authStore.user?.name?.charAt(0).toUpperCase() }}
+            {{ authStore.user?.nombre?.charAt(0).toUpperCase() }}
           </div>
           <div class="flex-1 min-w-0">
             <p class="text-sm font-medium text-white truncate group-hover:text-red-400 transition-colors">
-              {{ authStore.user?.name }}
+              {{ authStore.user?.nombre }}
             </p>
             <p class="text-xs text-zinc-500 truncate">{{ authStore.user?.email }}</p>
           </div>

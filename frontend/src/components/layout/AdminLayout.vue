@@ -42,7 +42,7 @@
     <main class="flex-1 overflow-y-auto">
       <header class="h-16 bg-zinc-900 border-b border-zinc-800 flex items-center px-6 sticky top-0 z-10">
         <h1 class="text-lg font-semibold text-white">Panel de Administración</h1>
-        <span class="ml-4 text-sm text-zinc-400">{{ authStore.user?.name }}</span>
+        <span class="ml-4 text-sm text-zinc-400">{{ authStore.user?.nombre }}</span>
       </header>
       <div class="p-6 animate-slide-up">
         <RouterView />

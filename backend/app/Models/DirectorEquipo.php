@@ -7,19 +7,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DirectorEquipo extends Model
 {
-    protected $table = 'team_principals';
+    protected $table = 'directores_equipo';
 
     protected $fillable = [
-        'name', 'nationality', 'photo', 'constructor_id', 'price', 'is_active',
+        'nombre', 'nacionalidad', 'foto', 'escuderia_id', 'precio', 'activo',
     ];
 
     protected function casts(): array
     {
-        return ['is_active' => 'boolean'];
+        return ['activo' => 'boolean'];
     }
 
     public function escuderia(): BelongsTo
     {
-        return $this->belongsTo(Escuderia::class, 'constructor_id');
+        return $this->belongsTo(Escuderia::class, 'escuderia_id');
     }
 }

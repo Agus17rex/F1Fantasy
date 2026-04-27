@@ -19,16 +19,15 @@ class ControladorF1 extends Controller
 
     public function pilotos(): JsonResponse
     {
-        // Si la base de datos no tiene pilotos, los sincronizamos desde la API
         if (Piloto::count() === 0) {
             $this->servicioApi->sincronizarEscuderias();
             $this->servicioApi->sincronizarPilotos();
         }
 
         $pilotos = Piloto::with('escuderia')
-            ->where('is_active', true)
+            ->where('activo', true)
             ->where('es_reserva', false)
-            ->orderBy('last_name')
+            ->orderBy('apellido')
             ->get();
 
         return response()->json($pilotos);
@@ -44,14 +43,13 @@ class ControladorF1 extends Controller
 
     public function escuderias(): JsonResponse
     {
-        // Si la base de datos no tiene escuderías, las sincronizamos desde la API
         if (Escuderia::count() === 0) {
             $this->servicioApi->sincronizarEscuderias();
         }
 
-        $escuderias = Escuderia::where('is_active', true)
+        $escuderias = Escuderia::where('activa', true)
             ->withCount('pilotos')
-            ->orderBy('name')
+            ->orderBy('nombre')
             ->get();
 
         return response()->json($escuderias);
@@ -69,14 +67,13 @@ class ControladorF1 extends Controller
     {
         $temporada = now()->year;
 
-        // Si no hay carreras de la temporada actual, las sincronizamos desde la API
-        if (Carrera::where('season', $temporada)->count() === 0) {
+        if (Carrera::where('temporada', $temporada)->count() === 0) {
             $this->servicioApi->sincronizarCarreras($temporada);
         }
 
         $carreras = Carrera::with('circuito')
-            ->where('season', $temporada)
-            ->orderBy('date')
+            ->where('temporada', $temporada)
+            ->orderBy('fecha')
             ->get();
 
         return response()->json($carreras);
@@ -92,16 +89,15 @@ class ControladorF1 extends Controller
     {
         $temporada = now()->year;
 
-        // Si no hay carreras de la temporada actual, sincronizamos primero
-        if (Carrera::where('season', $temporada)->count() === 0) {
+        if (Carrera::where('temporada', $temporada)->count() === 0) {
             $this->servicioApi->sincronizarCarreras($temporada);
         }
 
         $carrera = Carrera::with('circuito')
-            ->where('season', $temporada)
-            ->where('date', '>=', now()->toDateString())
-            ->where('status', 'upcoming')
-            ->orderBy('date')
+            ->where('temporada', $temporada)
+            ->where('fecha', '>=', now()->toDateString())
+            ->where('estado', 'upcoming')
+            ->orderBy('fecha')
             ->first();
 
         return response()->json($carrera);
@@ -112,8 +108,8 @@ class ControladorF1 extends Controller
     public function directores(): JsonResponse
     {
         $directores = DirectorEquipo::with('escuderia')
-            ->where('is_active', true)
-            ->orderByDesc('price')
+            ->where('activo', true)
+            ->orderByDesc('precio')
             ->get();
 
         return response()->json($directores);
@@ -123,15 +119,15 @@ class ControladorF1 extends Controller
 
     public function rankingFantasy(): JsonResponse
     {
-        // ── Pilotos: suma de fantasy_points por piloto ────────────────────────
-        $pilotosTotales = DB::table('race_results')
-            ->where('fantasy_points_calculated', true)
-            ->selectRaw('driver_id, SUM(fantasy_points) as total_pts')
-            ->groupBy('driver_id')
-            ->pluck('total_pts', 'driver_id');
+        // ── Pilotos: suma de puntos_fantasy por piloto ────────────────────────
+        $pilotosTotales = DB::table('resultados_carrera')
+            ->where('puntos_calculados', true)
+            ->selectRaw('piloto_id, SUM(puntos_fantasy) as total_pts')
+            ->groupBy('piloto_id')
+            ->pluck('total_pts', 'piloto_id');
 
         $pilotos = Piloto::with('escuderia')
-            ->where('is_active', true)
+            ->where('activo', true)
             ->where('es_reserva', false)
             ->get()
             ->map(fn($p) => array_merge($p->toArray(), [
@@ -140,14 +136,14 @@ class ControladorF1 extends Controller
             ->sortByDesc('total_fantasy_pts')
             ->values();
 
-        // ── Escuderías: suma de fantasy_points de sus pilotos ─────────────────
-        $escuderiasTotales = DB::table('race_results')
-            ->where('fantasy_points_calculated', true)
-            ->selectRaw('constructor_id, SUM(fantasy_points) as total_pts')
-            ->groupBy('constructor_id')
-            ->pluck('total_pts', 'constructor_id');
+        // ── Escuderías: suma de puntos_fantasy de sus pilotos ─────────────────
+        $escuderiasTotales = DB::table('resultados_carrera')
+            ->where('puntos_calculados', true)
+            ->selectRaw('escuderia_id, SUM(puntos_fantasy) as total_pts')
+            ->groupBy('escuderia_id')
+            ->pluck('total_pts', 'escuderia_id');
 
-        $escuderias = Escuderia::where('is_active', true)
+        $escuderias = Escuderia::where('activa', true)
             ->get()
             ->map(fn($e) => array_merge($e->toArray(), [
                 'total_fantasy_pts' => (int) ($escuderiasTotales[$e->id] ?? 0),
@@ -156,21 +152,20 @@ class ControladorF1 extends Controller
             ->values();
 
         // ── Directores: ROUND(puntos_constructor_por_carrera / 2) sumados ─────
-        // Subquery: puntos por (constructor, carrera)
-        $ptsPorCarreraYConstructor = DB::table('race_results')
-            ->where('fantasy_points_calculated', true)
-            ->selectRaw('constructor_id, race_id, SUM(fantasy_points) as constructor_pts')
-            ->groupBy('constructor_id', 'race_id')
+        $ptsPorCarreraYConstructor = DB::table('resultados_carrera')
+            ->where('puntos_calculados', true)
+            ->selectRaw('escuderia_id, carrera_id, SUM(puntos_fantasy) as constructor_pts')
+            ->groupBy('escuderia_id', 'carrera_id')
             ->get()
-            ->groupBy('constructor_id');
+            ->groupBy('escuderia_id');
 
         $directores = DirectorEquipo::with('escuderia')
-            ->where('is_active', true)
+            ->where('activo', true)
             ->get()
             ->map(function ($d) use ($ptsPorCarreraYConstructor) {
                 $totalPts = 0;
-                if ($d->constructor_id && isset($ptsPorCarreraYConstructor[$d->constructor_id])) {
-                    foreach ($ptsPorCarreraYConstructor[$d->constructor_id] as $fila) {
+                if ($d->escuderia_id && isset($ptsPorCarreraYConstructor[$d->escuderia_id])) {
+                    foreach ($ptsPorCarreraYConstructor[$d->escuderia_id] as $fila) {
                         $totalPts += (int) round($fila->constructor_pts / 2);
                     }
                 }
@@ -190,14 +185,12 @@ class ControladorF1 extends Controller
 
     public function clasificacionPilotos(): JsonResponse
     {
-        // La clasificación siempre se obtiene en tiempo real desde la API
         $clasificacion = $this->servicioApi->obtenerClasificacionPilotos();
         return response()->json($clasificacion);
     }
 
     public function clasificacionEscuderias(): JsonResponse
     {
-        // La clasificación siempre se obtiene en tiempo real desde la API
         $clasificacion = $this->servicioApi->obtenerClasificacionEscuderias();
         return response()->json($clasificacion);
     }

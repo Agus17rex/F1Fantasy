@@ -8,44 +8,44 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Carrera extends Model
 {
-    protected $table = 'races';
+    protected $table = 'carreras';
 
     protected $fillable = [
-        'api_id', 'season', 'round', 'name', 'circuit_id',
-        'date', 'time', 'is_sprint', 'status', 'transfer_deadline',
+        'api_id', 'temporada', 'ronda', 'nombre', 'circuito_id',
+        'fecha', 'hora', 'es_sprint', 'estado', 'cierre_mercado',
     ];
 
     protected function casts(): array
     {
         return [
-            'date'              => 'date',
-            'transfer_deadline' => 'datetime',
-            'is_sprint'         => 'boolean',
+            'fecha'          => 'date',
+            'cierre_mercado' => 'datetime',
+            'es_sprint'      => 'boolean',
         ];
     }
 
     public function circuito(): BelongsTo
     {
-        return $this->belongsTo(Circuito::class, 'circuit_id');
+        return $this->belongsTo(Circuito::class, 'circuito_id');
     }
 
     public function resultados(): HasMany
     {
-        return $this->hasMany(ResultadoCarrera::class, 'race_id');
+        return $this->hasMany(ResultadoCarrera::class, 'carrera_id');
     }
 
     public function puntosEquipos(): HasMany
     {
-        return $this->hasMany(PuntosEquipoCarrera::class, 'race_id');
+        return $this->hasMany(PuntosEquipoCarrera::class, 'carrera_id');
     }
 
     public function estaProxima(): bool
     {
-        return $this->status === 'upcoming' && $this->date->isFuture();
+        return $this->estado === 'upcoming' && $this->fecha->isFuture();
     }
 
     public function estaPuntuada(): bool
     {
-        return $this->status === 'scored';
+        return $this->estado === 'scored';
     }
 }

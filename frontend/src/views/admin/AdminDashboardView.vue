@@ -36,10 +36,10 @@
       <div class="space-y-2">
         <div v-for="carrera in carrerasRecientes" :key="carrera.id" class="card flex items-center gap-4">
           <div class="flex-1">
-            <h4 class="font-medium text-white">{{ carrera.name }}</h4>
-            <p class="text-zinc-500 text-sm">{{ carrera.circuito?.name }} · {{ formatearFecha(carrera.date) }}</p>
+            <h4 class="font-medium text-white">{{ carrera.nombre }}</h4>
+            <p class="text-zinc-500 text-sm">{{ carrera.circuito?.nombre }} · {{ formatearFecha(carrera.fecha) }}</p>
           </div>
-          <span :class="claseBadge(carrera.status)">{{ etiquetaEstado(carrera.status) }}</span>
+          <span :class="claseBadge(carrera.estado)">{{ etiquetaEstado(carrera.estado) }}</span>
         </div>
       </div>
     </div>

@@ -3,7 +3,7 @@
     <!-- Bienvenida -->
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-2xl font-bold text-white">Hola, {{ authStore.user?.name }} 👋</h2>
+        <h2 class="text-2xl font-bold text-white">Hola, {{ authStore.user?.nombre }} 👋</h2>
         <p class="text-zinc-400 text-sm mt-1">Temporada {{ temporadaActual }} · F1 Fantasy League</p>
       </div>
     </div>
@@ -12,9 +12,9 @@
     <div v-if="f1Store.proximaCarrera" class="card border-l-4 border-l-red-500 flex items-center gap-6">
       <div class="flex-1">
         <p class="text-xs text-zinc-500 uppercase tracking-wider font-medium mb-1">Próxima carrera</p>
-        <h3 class="text-xl font-bold text-white">{{ f1Store.proximaCarrera.name }}</h3>
+        <h3 class="text-xl font-bold text-white">{{ f1Store.proximaCarrera.nombre }}</h3>
         <p class="text-zinc-400 text-sm mt-0.5">
-          {{ f1Store.proximaCarrera.circuito?.name }} · {{ formatearFecha(f1Store.proximaCarrera.date) }}
+          {{ f1Store.proximaCarrera.circuito?.nombre }} · {{ formatearFecha(f1Store.proximaCarrera.fecha) }}
         </p>
       </div>
       <div class="text-right">
@@ -80,7 +80,7 @@ const temporadaActual = new Date().getFullYear()
 
 const diasHastaCarrera = computed(() => {
   if (!f1Store.proximaCarrera) return 0
-  const diff = new Date(f1Store.proximaCarrera.date) - new Date()
+  const diff = new Date(f1Store.proximaCarrera.fecha) - new Date()
   return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
 })
 

@@ -15,15 +15,15 @@ class AuthController extends Controller
     public function register(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'name'     => ['required', 'string', 'max:255'],
-            'username' => ['required', 'string', 'max:50', 'unique:users', 'alpha_dash'],
+            'nombre'   => ['required', 'string', 'max:255'],
+            'usuario'  => ['required', 'string', 'max:50', 'unique:users,usuario', 'alpha_dash'],
             'email'    => ['required', 'email', 'unique:users'],
             'password' => ['required', 'confirmed', Password::min(8)],
         ]);
 
         $user = User::create([
-            'name'     => $validated['name'],
-            'username' => $validated['username'],
+            'nombre'   => $validated['nombre'],
+            'usuario'  => $validated['usuario'],
             'email'    => $validated['email'],
             'password' => Hash::make($validated['password']),
         ]);
@@ -77,14 +77,13 @@ class AuthController extends Controller
         $user = $request->user();
 
         $validated = $request->validate([
-            'name'                  => ['sometimes', 'string', 'max:255'],
-            'username'              => ['sometimes', 'string', 'max:50', 'alpha_dash', 'unique:users,username,' . $user->id],
-            'email'                 => ['sometimes', 'email', 'unique:users,email,' . $user->id],
-            'password'              => ['sometimes', 'confirmed', Password::min(8)],
-            'password_actual'       => ['required_with:password', 'string'],
+            'nombre'          => ['sometimes', 'string', 'max:255'],
+            'usuario'         => ['sometimes', 'string', 'max:50', 'alpha_dash', 'unique:users,usuario,' . $user->id],
+            'email'           => ['sometimes', 'email', 'unique:users,email,' . $user->id],
+            'password'        => ['sometimes', 'confirmed', Password::min(8)],
+            'password_actual' => ['required_with:password', 'string'],
         ]);
 
-        // Si quiere cambiar la contraseña, verificar la actual
         if (isset($validated['password'])) {
             if (!Hash::check($validated['password_actual'], $user->password)) {
                 return response()->json(['message' => 'La contraseña actual no es correcta'], 422);

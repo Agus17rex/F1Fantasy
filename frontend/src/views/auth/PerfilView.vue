@@ -4,11 +4,11 @@
     <!-- Avatar + nombre -->
     <div class="card flex items-center gap-5">
       <div class="w-16 h-16 rounded-full bg-red-600 flex items-center justify-center text-2xl font-black text-white flex-shrink-0">
-        {{ authStore.user?.name?.charAt(0).toUpperCase() }}
+        {{ authStore.user?.nombre?.charAt(0).toUpperCase() }}
       </div>
       <div>
-        <h2 class="text-xl font-black text-white">{{ authStore.user?.name }}</h2>
-        <p class="text-zinc-400 text-sm">@{{ authStore.user?.username }}</p>
+        <h2 class="text-xl font-black text-white">{{ authStore.user?.nombre }}</h2>
+        <p class="text-zinc-400 text-sm">@{{ authStore.user?.usuario }}</p>
         <p class="text-zinc-500 text-xs mt-0.5">{{ authStore.user?.email }}</p>
       </div>
     </div>
@@ -21,13 +21,13 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm text-zinc-400 mb-1.5">Nombre</label>
-            <input v-model="form.name" type="text" class="input" placeholder="Tu nombre" />
+            <input v-model="form.nombre" type="text" class="input" placeholder="Tu nombre" />
           </div>
           <div>
             <label class="block text-sm text-zinc-400 mb-1.5">Usuario</label>
             <div class="relative">
               <span class="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">@</span>
-              <input v-model="form.username" type="text" class="input pl-7" placeholder="usuario" />
+              <input v-model="form.usuario" type="text" class="input pl-7" placeholder="usuario" />
             </div>
           </div>
         </div>
@@ -107,7 +107,7 @@ const authStore = useAuthStore()
 const router    = useRouter()
 
 // Formulario de datos básicos
-const form     = ref({ name: '', username: '', email: '' })
+const form     = ref({ nombre: '', usuario: '', email: '' })
 const guardando = ref(false)
 const exito     = ref('')
 const errorMsg  = ref('')
@@ -121,9 +121,9 @@ const errorPass     = ref('')
 onMounted(() => {
   // Pre-rellenar con los datos actuales del usuario
   form.value = {
-    name:     authStore.user?.name     || '',
-    username: authStore.user?.username || '',
-    email:    authStore.user?.email    || '',
+    nombre:  authStore.user?.nombre  || '',
+    usuario: authStore.user?.usuario || '',
+    email:   authStore.user?.email   || '',
   }
 })
 

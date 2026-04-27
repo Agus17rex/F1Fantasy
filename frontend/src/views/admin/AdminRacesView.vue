@@ -10,12 +10,12 @@
           <!-- Info -->
           <div class="flex-1">
             <div class="flex items-center gap-2 mb-0.5">
-              <span class="text-zinc-500 text-sm font-mono">R{{ carrera.round }}</span>
-              <h3 class="font-semibold text-white">{{ carrera.name }}</h3>
-              <span :class="claseBadge(carrera.status)" class="ml-1">{{ etiquetaEstado(carrera.status) }}</span>
+              <span class="text-zinc-500 text-sm font-mono">R{{ carrera.ronda }}</span>
+              <h3 class="font-semibold text-white">{{ carrera.nombre }}</h3>
+              <span :class="claseBadge(carrera.estado)" class="ml-1">{{ etiquetaEstado(carrera.estado) }}</span>
             </div>
             <p class="text-zinc-500 text-sm">
-              {{ carrera.circuito?.name }} · {{ formatearFecha(carrera.date) }}
+              {{ carrera.circuito?.nombre }} · {{ formatearFecha(carrera.fecha) }}
               <span v-if="carrera.resultados_count" class="ml-2 text-zinc-600">
                 {{ carrera.resultados_count }} resultados
               </span>
@@ -33,7 +33,7 @@
             </button>
 
             <button
-              v-if="carrera.status !== 'scored'"
+              v-if="carrera.estado !== 'scored'"
               @click="puntuarCarrera(carrera)"
               :disabled="accionCargando[carrera.id] || !carrera.resultados_count"
               class="btn-primary text-xs py-1.5 px-3"

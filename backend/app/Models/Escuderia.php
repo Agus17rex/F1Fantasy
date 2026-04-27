@@ -7,29 +7,29 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Escuderia extends Model
 {
-    protected $table = 'constructors';
+    protected $table = 'escuderias';
 
     protected $fillable = [
-        'api_id', 'name', 'nationality', 'logo', 'color', 'price', 'is_active',
+        'api_id', 'nombre', 'nacionalidad', 'logo', 'color', 'precio', 'activa',
     ];
 
     protected function casts(): array
     {
-        return ['is_active' => 'boolean'];
+        return ['activa' => 'boolean'];
     }
 
     public function getPrecioFormateadoAttribute(): string
     {
-        return number_format($this->price / 1_000_000, 1) . 'M';
+        return number_format($this->precio / 1_000_000, 1) . 'M';
     }
 
     public function pilotos(): HasMany
     {
-        return $this->hasMany(Piloto::class, 'constructor_id');
+        return $this->hasMany(Piloto::class, 'escuderia_id');
     }
 
     public function resultados(): HasMany
     {
-        return $this->hasMany(ResultadoCarrera::class, 'constructor_id');
+        return $this->hasMany(ResultadoCarrera::class, 'escuderia_id');
     }
 }

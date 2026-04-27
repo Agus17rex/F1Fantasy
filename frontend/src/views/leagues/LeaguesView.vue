@@ -30,20 +30,20 @@
       >
         <div class="flex items-start justify-between">
           <div>
-            <h3 class="font-semibold text-white">{{ liga.name }}</h3>
-            <p class="text-zinc-400 text-sm mt-0.5">{{ liga.members_count }} / {{ liga.max_members }} miembros</p>
+            <h3 class="font-semibold text-white">{{ liga.nombre }}</h3>
+            <p class="text-zinc-400 text-sm mt-0.5">{{ liga.miembros_count }} / {{ liga.max_miembros }} miembros</p>
           </div>
           <span class="text-xs bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded font-mono">
-            {{ liga.code }}
+            {{ liga.codigo }}
           </span>
         </div>
-        <p v-if="liga.description" class="text-zinc-500 text-sm mt-2 line-clamp-2">{{ liga.description }}</p>
+        <p v-if="liga.descripcion" class="text-zinc-500 text-sm mt-2 line-clamp-2">{{ liga.descripcion }}</p>
         <div class="mt-3 flex items-center justify-between">
-          <span :class="liga.is_private ? 'text-amber-400' : 'text-green-400'" class="text-xs font-medium">
-            {{ liga.is_private ? '🔒 Privada' : '🌐 Pública' }}
+          <span :class="liga.es_privada ? 'text-amber-400' : 'text-green-400'" class="text-xs font-medium">
+            {{ liga.es_privada ? '🔒 Privada' : '🌐 Pública' }}
           </span>
           <div class="text-right">
-            <span class="text-zinc-500 text-xs">T{{ liga.season }}</span>
+            <span class="text-zinc-500 text-xs">T{{ liga.temporada }}</span>
             <span class="text-zinc-600 text-xs mx-1">·</span>
             <span class="text-red-400 text-xs font-medium">{{ (liga.presupuesto_inicial / 1_000_000).toFixed(0) }}M €</span>
           </div>
@@ -59,15 +59,15 @@
           <form @submit.prevent="handleCrear" class="space-y-4">
             <div>
               <label class="block text-sm text-zinc-400 mb-1.5">Nombre de la liga</label>
-              <input v-model="formularioCrear.name" type="text" class="input" placeholder="Mi Liga F1" required />
+              <input v-model="formularioCrear.nombre" type="text" class="input" placeholder="Mi Liga F1" required />
             </div>
             <div>
               <label class="block text-sm text-zinc-400 mb-1.5">Descripción (opcional)</label>
-              <textarea v-model="formularioCrear.description" class="input resize-none h-20" placeholder="Describe tu liga..."></textarea>
+              <textarea v-model="formularioCrear.descripcion" class="input resize-none h-20" placeholder="Describe tu liga..."></textarea>
             </div>
             <div>
               <label class="block text-sm text-zinc-400 mb-1.5">Máximo de miembros</label>
-              <input v-model.number="formularioCrear.max_members" type="number" class="input" min="2" max="50" />
+              <input v-model.number="formularioCrear.max_miembros" type="number" class="input" min="2" max="50" />
             </div>
             <div>
               <label class="block text-sm text-zinc-400 mb-1.5">
@@ -146,7 +146,7 @@ const errorUnirse   = ref('')
 const cargandoUnirse = ref(false)
 const errorCrear    = ref('')
 const cargandoCrear = ref(false)
-const formularioCrear  = ref({ name: '', description: '', max_members: 20, is_private: true })
+const formularioCrear  = ref({ nombre: '', descripcion: '', max_miembros: 20, es_privada: true })
 const presupuestoMillon = ref(50)   // valor en millones que ve el usuario
 
 async function cargarLigas() {
@@ -168,6 +168,7 @@ async function handleCrear() {
       presupuesto_inicial: presupuestoMillon.value * 1_000_000,
     })
     mostrarCrear.value = false
+    formularioCrear.value = { nombre: '', descripcion: '', max_miembros: 20, es_privada: true }
     presupuestoMillon.value = 50
     await cargarLigas()
   } catch (e) {

@@ -8,28 +8,28 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class MiembroLiga extends Model
 {
-    protected $table = 'league_members';
+    protected $table = 'miembros_liga';
 
-    protected $fillable = ['league_id', 'user_id', 'total_points', 'rank', 'joined_at'];
+    protected $fillable = ['liga_id', 'usuario_id', 'puntos_totales', 'posicion', 'fecha_union'];
 
     protected function casts(): array
     {
-        return ['joined_at' => 'datetime'];
+        return ['fecha_union' => 'datetime'];
     }
 
     public function liga(): BelongsTo
     {
-        return $this->belongsTo(Liga::class, 'league_id');
+        return $this->belongsTo(Liga::class, 'liga_id');
     }
 
     public function usuario(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'usuario_id');
     }
 
     public function equipo(): HasOne
     {
-        return $this->hasOne(EquipoFantasy::class, 'user_id', 'user_id')
-            ->where('league_id', $this->league_id);
+        return $this->hasOne(EquipoFantasy::class, 'usuario_id', 'usuario_id')
+            ->where('liga_id', $this->liga_id);
     }
 }

@@ -8,30 +8,30 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Liga extends Model
 {
-    protected $table = 'leagues';
+    protected $table = 'ligas';
 
     protected $fillable = [
-        'name', 'code', 'description', 'owner_id',
-        'max_members', 'is_private', 'season', 'status', 'presupuesto_inicial',
+        'nombre', 'codigo', 'descripcion', 'propietario_id',
+        'max_miembros', 'es_privada', 'temporada', 'estado', 'presupuesto_inicial',
     ];
 
     protected function casts(): array
     {
-        return ['is_private' => 'boolean'];
+        return ['es_privada' => 'boolean'];
     }
 
     public function propietario(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'owner_id');
+        return $this->belongsTo(User::class, 'propietario_id');
     }
 
     public function miembros(): HasMany
     {
-        return $this->hasMany(MiembroLiga::class, 'league_id');
+        return $this->hasMany(MiembroLiga::class, 'liga_id');
     }
 
     public function equipos(): HasMany
     {
-        return $this->hasMany(EquipoFantasy::class, 'league_id');
+        return $this->hasMany(EquipoFantasy::class, 'liga_id');
     }
 }

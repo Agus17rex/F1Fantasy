@@ -7,12 +7,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Circuito extends Model
 {
-    protected $table = 'circuits';
+    protected $table = 'circuitos';
 
-    protected $fillable = ['api_id', 'name', 'location', 'country', 'lat', 'lng', 'image'];
+    protected $fillable = ['api_id', 'nombre', 'ubicacion', 'pais', 'lat', 'lng', 'imagen'];
 
     public function carreras(): HasMany
     {
-        return $this->hasMany(Carrera::class, 'circuit_id');
+        return $this->hasMany(Carrera::class, 'circuito_id');
     }
 }

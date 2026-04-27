@@ -15,20 +15,20 @@
         class="card flex items-center gap-4 hover:border-zinc-600 transition-colors cursor-pointer"
       >
         <div class="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-sm font-bold text-zinc-300 flex-shrink-0">
-          {{ carrera.round }}
+          {{ carrera.ronda }}
         </div>
 
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2">
-            <h3 class="font-semibold text-white truncate">{{ carrera.name }}</h3>
-            <span :class="claseBadge(carrera.status)">{{ etiquetaEstado(carrera.status) }}</span>
+            <h3 class="font-semibold text-white truncate">{{ carrera.nombre }}</h3>
+            <span :class="claseBadge(carrera.estado)">{{ etiquetaEstado(carrera.estado) }}</span>
           </div>
-          <p class="text-zinc-400 text-sm truncate">{{ carrera.circuito?.name }} · {{ carrera.circuito?.country }}</p>
+          <p class="text-zinc-400 text-sm truncate">{{ carrera.circuito?.nombre }} · {{ carrera.circuito?.pais }}</p>
         </div>
 
         <div class="text-right flex-shrink-0">
-          <p class="text-white font-medium text-sm">{{ formatearFecha(carrera.date) }}</p>
-          <p v-if="carrera.time" class="text-zinc-500 text-xs">{{ carrera.time }}</p>
+          <p class="text-white font-medium text-sm">{{ formatearFecha(carrera.fecha) }}</p>
+          <p v-if="carrera.hora" class="text-zinc-500 text-xs">{{ carrera.hora }}</p>
         </div>
 
         <svg class="w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

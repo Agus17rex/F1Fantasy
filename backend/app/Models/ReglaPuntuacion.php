@@ -6,12 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class ReglaPuntuacion extends Model
 {
-    protected $table = 'scoring_rules';
+    protected $table = 'reglas_puntuacion';
 
-    protected $fillable = ['event', 'points', 'description', 'is_active'];
+    protected $fillable = ['evento', 'puntos', 'descripcion', 'activa'];
 
     protected function casts(): array
     {
-        return ['is_active' => 'boolean'];
+        return ['activa' => 'boolean'];
     }
 }

@@ -12,28 +12,28 @@ class DirectoresSeeder extends Seeder
     {
         // Directores F1 2025 — se vinculan a su escudería por api_id
         $directores = [
-            ['name' => 'Christian Horner',   'nationality' => 'British',   'constructor' => 'red_bull',    'price' => 25_000_000],
-            ['name' => 'Frédéric Vasseur',   'nationality' => 'French',    'constructor' => 'ferrari',     'price' => 22_000_000],
-            ['name' => 'Toto Wolff',         'nationality' => 'Austrian',  'constructor' => 'mercedes',    'price' => 20_000_000],
-            ['name' => 'Andrea Stella',      'nationality' => 'Italian',   'constructor' => 'mclaren',     'price' => 20_000_000],
-            ['name' => 'Andy Cowell',        'nationality' => 'British',   'constructor' => 'aston_martin','price' => 12_000_000],
-            ['name' => 'Oliver Oakes',       'nationality' => 'British',   'constructor' => 'alpine',      'price' => 10_000_000],
-            ['name' => 'James Vowles',       'nationality' => 'British',   'constructor' => 'williams',    'price' => 10_000_000],
-            ['name' => 'Laurent Mekies',     'nationality' => 'French',    'constructor' => 'rb',          'price' =>  8_000_000],
-            ['name' => 'Ayao Komatsu',       'nationality' => 'Japanese',  'constructor' => 'haas',        'price' =>  8_000_000],
-            ['name' => 'Mattia Binotto',     'nationality' => 'Italian',   'constructor' => 'sauber',      'price' =>  8_000_000],
+            ['nombre' => 'Christian Horner',   'nacionalidad' => 'Británico',  'escuderia' => 'red_bull',    'precio' => 25_000_000],
+            ['nombre' => 'Frédéric Vasseur',   'nacionalidad' => 'Francés',    'escuderia' => 'ferrari',     'precio' => 22_000_000],
+            ['nombre' => 'Toto Wolff',         'nacionalidad' => 'Austriaco',  'escuderia' => 'mercedes',    'precio' => 20_000_000],
+            ['nombre' => 'Andrea Stella',      'nacionalidad' => 'Italiano',   'escuderia' => 'mclaren',     'precio' => 20_000_000],
+            ['nombre' => 'Andy Cowell',        'nacionalidad' => 'Británico',  'escuderia' => 'aston_martin','precio' => 12_000_000],
+            ['nombre' => 'Oliver Oakes',       'nacionalidad' => 'Británico',  'escuderia' => 'alpine',      'precio' => 10_000_000],
+            ['nombre' => 'James Vowles',       'nacionalidad' => 'Británico',  'escuderia' => 'williams',    'precio' => 10_000_000],
+            ['nombre' => 'Laurent Mekies',     'nacionalidad' => 'Francés',    'escuderia' => 'rb',          'precio' =>  8_000_000],
+            ['nombre' => 'Ayao Komatsu',       'nacionalidad' => 'Japonés',    'escuderia' => 'haas',        'precio' =>  8_000_000],
+            ['nombre' => 'Mattia Binotto',     'nacionalidad' => 'Italiano',   'escuderia' => 'sauber',      'precio' =>  8_000_000],
         ];
 
         foreach ($directores as $datos) {
-            $escuderia = Escuderia::where('api_id', $datos['constructor'])->first();
+            $escuderia = Escuderia::where('api_id', $datos['escuderia'])->first();
 
             DirectorEquipo::updateOrCreate(
-                ['name' => $datos['name']],
+                ['nombre' => $datos['nombre']],
                 [
-                    'nationality'    => $datos['nationality'],
-                    'constructor_id' => $escuderia?->id,
-                    'price'          => $datos['price'],
-                    'is_active'      => true,
+                    'nacionalidad' => $datos['nacionalidad'],
+                    'escuderia_id' => $escuderia?->id,
+                    'precio'       => $datos['precio'],
+                    'activo'       => true,
                 ]
             );
         }

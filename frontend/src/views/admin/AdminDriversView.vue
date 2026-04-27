@@ -27,11 +27,11 @@
         >
           <div class="w-1 h-8 rounded-full flex-shrink-0" :style="{ backgroundColor: piloto.escuderia?.color || '#888' }"></div>
           <p class="flex-1 text-white text-sm">
-            {{ piloto.first_name }} <strong>{{ piloto.last_name }}</strong>
-            <span class="text-zinc-500 text-xs ml-2">{{ piloto.escuderia?.name }}</span>
+            {{ piloto.nombre }} <strong>{{ piloto.apellido }}</strong>
+            <span class="text-zinc-500 text-xs ml-2">{{ piloto.escuderia?.nombre }}</span>
           </p>
           <span class="text-red-400 font-mono text-sm font-semibold">
-            {{ formatearPrecio(piloto.price) }}
+            {{ formatearPrecio(piloto.precio) }}
           </span>
         </div>
       </div>
@@ -48,9 +48,9 @@
           class="flex items-center gap-3 py-1.5 border-b border-zinc-800 last:border-0"
         >
           <div class="w-3 h-3 rounded-full flex-shrink-0" :style="{ backgroundColor: escuderia.color || '#888' }"></div>
-          <p class="flex-1 text-white text-sm font-medium">{{ escuderia.name }}</p>
+          <p class="flex-1 text-white text-sm font-medium">{{ escuderia.nombre }}</p>
           <span class="text-red-400 font-mono text-sm font-semibold">
-            {{ formatearPrecio(escuderia.price) }}
+            {{ formatearPrecio(escuderia.precio) }}
           </span>
         </div>
       </div>
@@ -67,11 +67,11 @@
           class="flex items-center gap-3 py-1.5 border-b border-zinc-800 last:border-0"
         >
           <p class="flex-1 text-white text-sm font-medium">
-            {{ director.name }}
-            <span class="text-zinc-500 text-xs ml-2 font-normal">{{ director.escuderia?.name }}</span>
+            {{ director.nombre }}
+            <span class="text-zinc-500 text-xs ml-2 font-normal">{{ director.escuderia?.nombre }}</span>
           </p>
           <span class="text-red-400 font-mono text-sm font-semibold">
-            {{ formatearPrecio(director.price) }}
+            {{ formatearPrecio(director.precio) }}
           </span>
         </div>
       </div>
@@ -103,11 +103,11 @@ async function cargarDatos() {
   cargando.value = true
   try {
     await Promise.all([f1Store.fetchPilotos(), f1Store.fetchEscuderias()])
-    pilotos.value    = [...f1Store.pilotos].sort((a, b) => b.price - a.price)
-    escuderias.value = [...f1Store.escuderias].sort((a, b) => b.price - a.price)
+    pilotos.value    = [...f1Store.pilotos].sort((a, b) => b.precio - a.precio)
+    escuderias.value = [...f1Store.escuderias].sort((a, b) => b.precio - a.precio)
 
     const { data } = await api.get('/f1/directores')
-    directores.value = [...data].sort((a, b) => b.price - a.price)
+    directores.value = [...data].sort((a, b) => b.precio - a.precio)
   } finally {
     cargando.value = false
   }

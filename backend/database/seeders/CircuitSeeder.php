@@ -9,35 +9,35 @@ class CircuitSeeder extends Seeder
 {
     public function run(): void
     {
-        $circuits = [
-            ['api_id' => 'bahrain',       'name' => 'Bahrain International Circuit',       'location' => 'Sakhir',      'country' => 'Bahrain'],
-            ['api_id' => 'jeddah',        'name' => 'Jeddah Corniche Circuit',              'location' => 'Jeddah',      'country' => 'Saudi Arabia'],
-            ['api_id' => 'albert_park',   'name' => 'Albert Park Grand Prix Circuit',      'location' => 'Melbourne',   'country' => 'Australia'],
-            ['api_id' => 'suzuka',        'name' => 'Suzuka International Racing Course',  'location' => 'Suzuka',      'country' => 'Japan'],
-            ['api_id' => 'shanghai',      'name' => 'Shanghai International Circuit',      'location' => 'Shanghai',    'country' => 'China'],
-            ['api_id' => 'miami',         'name' => 'Miami International Autodrome',       'location' => 'Miami',       'country' => 'USA'],
-            ['api_id' => 'imola',         'name' => 'Autodromo Enzo e Dino Ferrari',       'location' => 'Imola',       'country' => 'Italy'],
-            ['api_id' => 'monaco',        'name' => 'Circuit de Monaco',                   'location' => 'Monte-Carlo', 'country' => 'Monaco'],
-            ['api_id' => 'villeneuve',    'name' => 'Circuit Gilles Villeneuve',            'location' => 'Montreal',    'country' => 'Canada'],
-            ['api_id' => 'catalunya',     'name' => 'Circuit de Barcelona-Catalunya',      'location' => 'Montmeló',    'country' => 'Spain'],
-            ['api_id' => 'red_bull_ring', 'name' => 'Red Bull Ring',                       'location' => 'Spielberg',   'country' => 'Austria'],
-            ['api_id' => 'silverstone',   'name' => 'Silverstone Circuit',                 'location' => 'Silverstone', 'country' => 'UK'],
-            ['api_id' => 'hungaroring',   'name' => 'Hungaroring',                         'location' => 'Budapest',    'country' => 'Hungary'],
-            ['api_id' => 'spa',           'name' => 'Circuit de Spa-Francorchamps',        'location' => 'Spa',         'country' => 'Belgium'],
-            ['api_id' => 'zandvoort',     'name' => 'Circuit Zandvoort',                   'location' => 'Zandvoort',   'country' => 'Netherlands'],
-            ['api_id' => 'monza',         'name' => 'Autodromo Nazionale di Monza',        'location' => 'Monza',       'country' => 'Italy'],
-            ['api_id' => 'baku',          'name' => 'Baku City Circuit',                   'location' => 'Baku',        'country' => 'Azerbaijan'],
-            ['api_id' => 'marina_bay',    'name' => 'Marina Bay Street Circuit',           'location' => 'Singapore',   'country' => 'Singapore'],
-            ['api_id' => 'americas',      'name' => 'Circuit of the Americas',             'location' => 'Austin',      'country' => 'USA'],
-            ['api_id' => 'rodriguez',     'name' => 'Autodromo Hermanos Rodriguez',        'location' => 'Mexico City', 'country' => 'Mexico'],
-            ['api_id' => 'interlagos',    'name' => 'Autodromo Jose Carlos Pace',          'location' => 'São Paulo',   'country' => 'Brazil'],
-            ['api_id' => 'vegas',         'name' => 'Las Vegas Strip Street Circuit',      'location' => 'Las Vegas',   'country' => 'USA'],
-            ['api_id' => 'losail',        'name' => 'Losail International Circuit',        'location' => 'Al Daayen',   'country' => 'Qatar'],
-            ['api_id' => 'yas_marina',    'name' => 'Yas Marina Circuit',                  'location' => 'Abu Dhabi',   'country' => 'UAE'],
+        $circuitos = [
+            ['api_id' => 'bahrain',       'nombre' => 'Bahrain International Circuit',      'ubicacion' => 'Sakhir',      'pais' => 'Baréin'],
+            ['api_id' => 'jeddah',        'nombre' => 'Jeddah Corniche Circuit',            'ubicacion' => 'Yeda',        'pais' => 'Arabia Saudí'],
+            ['api_id' => 'albert_park',   'nombre' => 'Albert Park Grand Prix Circuit',     'ubicacion' => 'Melbourne',   'pais' => 'Australia'],
+            ['api_id' => 'suzuka',        'nombre' => 'Suzuka International Racing Course', 'ubicacion' => 'Suzuka',      'pais' => 'Japón'],
+            ['api_id' => 'shanghai',      'nombre' => 'Shanghai International Circuit',     'ubicacion' => 'Shanghái',    'pais' => 'China'],
+            ['api_id' => 'miami',         'nombre' => 'Miami International Autodrome',      'ubicacion' => 'Miami',       'pais' => 'Estados Unidos'],
+            ['api_id' => 'imola',         'nombre' => 'Autodromo Enzo e Dino Ferrari',      'ubicacion' => 'Imola',       'pais' => 'Italia'],
+            ['api_id' => 'monaco',        'nombre' => 'Circuito de Mónaco',                 'ubicacion' => 'Montecarlo',  'pais' => 'Mónaco'],
+            ['api_id' => 'villeneuve',    'nombre' => 'Circuito Gilles Villeneuve',         'ubicacion' => 'Montreal',    'pais' => 'Canadá'],
+            ['api_id' => 'catalunya',     'nombre' => 'Circuit de Barcelona-Catalunya',     'ubicacion' => 'Montmeló',    'pais' => 'España'],
+            ['api_id' => 'red_bull_ring', 'nombre' => 'Red Bull Ring',                      'ubicacion' => 'Spielberg',   'pais' => 'Austria'],
+            ['api_id' => 'silverstone',   'nombre' => 'Silverstone Circuit',                'ubicacion' => 'Silverstone', 'pais' => 'Reino Unido'],
+            ['api_id' => 'hungaroring',   'nombre' => 'Hungaroring',                        'ubicacion' => 'Budapest',    'pais' => 'Hungría'],
+            ['api_id' => 'spa',           'nombre' => 'Circuito de Spa-Francorchamps',      'ubicacion' => 'Spa',         'pais' => 'Bélgica'],
+            ['api_id' => 'zandvoort',     'nombre' => 'Circuit Zandvoort',                  'ubicacion' => 'Zandvoort',   'pais' => 'Países Bajos'],
+            ['api_id' => 'monza',         'nombre' => 'Autodromo Nazionale di Monza',       'ubicacion' => 'Monza',       'pais' => 'Italia'],
+            ['api_id' => 'baku',          'nombre' => 'Circuito Urbano de Bakú',            'ubicacion' => 'Bakú',        'pais' => 'Azerbaiyán'],
+            ['api_id' => 'marina_bay',    'nombre' => 'Marina Bay Street Circuit',          'ubicacion' => 'Singapur',    'pais' => 'Singapur'],
+            ['api_id' => 'americas',      'nombre' => 'Circuito de las Américas',           'ubicacion' => 'Austin',      'pais' => 'Estados Unidos'],
+            ['api_id' => 'rodriguez',     'nombre' => 'Autódromo Hermanos Rodríguez',       'ubicacion' => 'Ciudad de México', 'pais' => 'México'],
+            ['api_id' => 'interlagos',    'nombre' => 'Autódromo José Carlos Pace',         'ubicacion' => 'São Paulo',   'pais' => 'Brasil'],
+            ['api_id' => 'vegas',         'nombre' => 'Las Vegas Strip Street Circuit',     'ubicacion' => 'Las Vegas',   'pais' => 'Estados Unidos'],
+            ['api_id' => 'losail',        'nombre' => 'Losail International Circuit',       'ubicacion' => 'Al Daayen',   'pais' => 'Catar'],
+            ['api_id' => 'yas_marina',    'nombre' => 'Yas Marina Circuit',                 'ubicacion' => 'Abu Dabi',    'pais' => 'Emiratos Árabes Unidos'],
         ];
 
-        foreach ($circuits as $circuit) {
-            Circuito::updateOrCreate(['api_id' => $circuit['api_id']], $circuit);
+        foreach ($circuitos as $c) {
+            Circuito::updateOrCreate(['api_id' => $c['api_id']], $c);
         }
     }
 }

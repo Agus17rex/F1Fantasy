@@ -20,14 +20,10 @@ class ControladorAdminCarrera extends Controller
         private ServicioPuntuacion $servicioPuntuacion
     ) {}
 
-    /**
-     * Sincroniza todos los datos desde la API de F1 (pilotos, escuderías y carreras)
-     */
     public function sincronizarDatosF1(Request $request): JsonResponse
     {
         $temporada = $request->get('season', date('Y'));
 
-        // El orden importa: primero escuderías, luego pilotos (para poder vincularlos)
         $totalEscuderias = $this->servicioApi->sincronizarEscuderias($temporada);
         $totalPilotos    = $this->servicioApi->sincronizarPilotos($temporada);
         $totalCarreras   = $this->servicioApi->sincronizarCarreras($temporada);
@@ -40,9 +36,6 @@ class ControladorAdminCarrera extends Controller
         ]);
     }
 
-    /**
-     * Sincroniza los resultados de una carrera específica
-     */
     public function sincronizarResultados(Carrera $carrera): JsonResponse
     {
         $sincronizados = $this->servicioApi->sincronizarResultadosCarrera($carrera);
@@ -53,45 +46,35 @@ class ControladorAdminCarrera extends Controller
         ]);
     }
 
-    /**
-     * Calcula los puntos fantasy de una carrera
-     */
     public function puntuarCarrera(Carrera $carrera): JsonResponse
     {
         if ($carrera->resultados->isEmpty()) {
             return response()->json(['message' => 'No hay resultados para esta carrera'], 422);
         }
 
-        if ($carrera->status === 'scored') {
+        if ($carrera->estado === 'scored') {
             return response()->json(['message' => 'Esta carrera ya ha sido puntuada'], 422);
         }
 
         $this->servicioPuntuacion->procesarPuntosCarrera($carrera);
 
         return response()->json([
-            'message' => "Puntos calculados para: {$carrera->name}",
+            'message' => "Puntos calculados para: {$carrera->nombre}",
             'carrera' => $carrera->fresh(),
         ]);
     }
 
-    /**
-     * Lista las carreras de la temporada actual con su estado
-     */
     public function carreras(): JsonResponse
     {
         $carreras = Carrera::with(['circuito', 'resultados'])
             ->withCount('resultados')
-            ->where('season', now()->year)
-            ->orderBy('date')
+            ->where('temporada', now()->year)
+            ->orderBy('fecha')
             ->get();
 
         return response()->json($carreras);
     }
 
-    /**
-     * Recalcula los precios de pilotos, escuderías y directores
-     * usando la clasificación actual del campeonato (escala 10 M – 80 M).
-     */
     public function actualizarPrecios(Request $request): JsonResponse
     {
         $temporada = (int) $request->input('season', date('Y'));
@@ -108,9 +91,6 @@ class ControladorAdminCarrera extends Controller
         return response()->json(['message' => 'Precios recalculados correctamente según la clasificación del campeonato']);
     }
 
-    /**
-     * Panel de control con estadísticas generales
-     */
     public function panelControl(): JsonResponse
     {
         return response()->json([
@@ -118,12 +98,12 @@ class ControladorAdminCarrera extends Controller
                 'total_usuarios'      => User::count(),
                 'total_ligas'         => Liga::count(),
                 'total_equipos'       => EquipoFantasy::count(),
-                'carreras_puntuadas'  => Carrera::where('season', now()->year)->where('status', 'scored')->count(),
-                'carreras_pendientes' => Carrera::where('season', now()->year)->where('status', 'upcoming')->count(),
+                'carreras_puntuadas'  => Carrera::where('temporada', now()->year)->where('estado', 'scored')->count(),
+                'carreras_pendientes' => Carrera::where('temporada', now()->year)->where('estado', 'upcoming')->count(),
             ],
             'carreras_recientes' => Carrera::with('circuito')
-                ->where('season', now()->year)
-                ->orderByDesc('date')
+                ->where('temporada', now()->year)
+                ->orderByDesc('fecha')
                 ->limit(5)
                 ->get(),
         ]);

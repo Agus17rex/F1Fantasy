@@ -7,36 +7,36 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ResultadoCarrera extends Model
 {
-    protected $table = 'race_results';
+    protected $table = 'resultados_carrera';
 
     protected $fillable = [
-        'race_id', 'driver_id', 'constructor_id',
-        'grid_position', 'finish_position', 'status',
-        'points_official', 'fastest_lap', 'driver_of_the_day',
-        'qualifying_position', 'fantasy_points', 'fantasy_points_calculated',
+        'carrera_id', 'piloto_id', 'escuderia_id',
+        'posicion_salida', 'posicion_final', 'estado',
+        'puntos_oficiales', 'vuelta_rapida', 'piloto_del_dia',
+        'posicion_clasificacion', 'puntos_fantasy', 'puntos_calculados',
     ];
 
     protected function casts(): array
     {
         return [
-            'fastest_lap'               => 'boolean',
-            'driver_of_the_day'         => 'boolean',
-            'fantasy_points_calculated' => 'boolean',
+            'vuelta_rapida'    => 'boolean',
+            'piloto_del_dia'   => 'boolean',
+            'puntos_calculados' => 'boolean',
         ];
     }
 
     public function carrera(): BelongsTo
     {
-        return $this->belongsTo(Carrera::class, 'race_id');
+        return $this->belongsTo(Carrera::class, 'carrera_id');
     }
 
     public function piloto(): BelongsTo
     {
-        return $this->belongsTo(Piloto::class, 'driver_id');
+        return $this->belongsTo(Piloto::class, 'piloto_id');
     }
 
     public function escuderia(): BelongsTo
     {
-        return $this->belongsTo(Escuderia::class, 'constructor_id');
+        return $this->belongsTo(Escuderia::class, 'escuderia_id');
     }
 }

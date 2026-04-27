@@ -8,15 +8,15 @@
         <div class="flex items-start justify-between gap-4">
           <div>
             <p class="text-zinc-500 text-xs uppercase tracking-wider font-medium mb-1">
-              Ronda {{ carrera.round }} · Temporada {{ carrera.season }}
+              Ronda {{ carrera.ronda }} · Temporada {{ carrera.temporada }}
             </p>
-            <h2 class="text-2xl font-black text-white">{{ carrera.name }}</h2>
+            <h2 class="text-2xl font-black text-white">{{ carrera.nombre }}</h2>
             <p class="text-zinc-400 mt-1">
-              {{ carrera.circuito?.name }} · {{ carrera.circuito?.location }}, {{ carrera.circuito?.country }}
+              {{ carrera.circuito?.nombre }} · {{ carrera.circuito?.ubicacion }}, {{ carrera.circuito?.pais }}
             </p>
-            <p class="text-zinc-500 text-sm mt-0.5">{{ formatearFecha(carrera.date) }}</p>
+            <p class="text-zinc-500 text-sm mt-0.5">{{ formatearFecha(carrera.fecha) }}</p>
           </div>
-          <span :class="claseBadge(carrera.status)" class="flex-shrink-0">{{ etiquetaEstado(carrera.status) }}</span>
+          <span :class="claseBadge(carrera.estado)" class="flex-shrink-0">{{ etiquetaEstado(carrera.estado) }}</span>
         </div>
       </div>
 
@@ -30,7 +30,7 @@
                 <th class="text-left pb-3 w-10">Pos</th>
                 <th class="text-left pb-3">Piloto</th>
                 <th class="text-left pb-3">Escudería</th>
-                <th class="text-center pb-3">Grid</th>
+                <th class="text-center pb-3">Salida</th>
                 <th class="text-center pb-3">Estado</th>
                 <th class="text-right pb-3">Pts F1</th>
                 <th class="text-right pb-3 text-red-400">Pts Fantasy</th>
@@ -39,32 +39,32 @@
             <tbody class="divide-y divide-zinc-800">
               <tr v-for="resultado in resultadosOrdenados" :key="resultado.id" class="hover:bg-zinc-800/30 transition-colors">
                 <td class="py-3 pr-3">
-                  <span :class="clasePodio(resultado.finish_position)" class="font-bold text-sm">
-                    {{ resultado.finish_position || '—' }}
+                  <span :class="clasePodio(resultado.posicion_final)" class="font-bold text-sm">
+                    {{ resultado.posicion_final || '—' }}
                   </span>
                 </td>
                 <td class="py-3">
                   <div class="flex items-center gap-2">
                     <div class="w-1 h-5 rounded-full" :style="{ backgroundColor: resultado.escuderia?.color || '#888' }"></div>
                     <div>
-                      <p class="text-white font-medium">{{ resultado.piloto?.first_name }} {{ resultado.piloto?.last_name }}</p>
+                      <p class="text-white font-medium">{{ resultado.piloto?.nombre }} {{ resultado.piloto?.apellido }}</p>
                       <div class="flex items-center gap-1.5 mt-0.5">
-                        <span v-if="resultado.fastest_lap" class="text-purple-400 text-xs">⚡ V.Rápida</span>
-                        <span v-if="resultado.driver_of_the_day" class="text-yellow-400 text-xs">⭐ DOTD</span>
+                        <span v-if="resultado.vuelta_rapida" class="text-purple-400 text-xs">⚡ V.Rápida</span>
+                        <span v-if="resultado.piloto_del_dia" class="text-yellow-400 text-xs">⭐ Piloto del día</span>
                       </div>
                     </div>
                   </div>
                 </td>
-                <td class="py-3 text-zinc-400">{{ resultado.escuderia?.name }}</td>
-                <td class="py-3 text-center text-zinc-500">{{ resultado.grid_position || '—' }}</td>
+                <td class="py-3 text-zinc-400">{{ resultado.escuderia?.nombre }}</td>
+                <td class="py-3 text-center text-zinc-500">{{ resultado.posicion_salida || '—' }}</td>
                 <td class="py-3 text-center">
-                  <span :class="resultado.status === 'Finished' ? 'text-green-400' : 'text-red-400'" class="text-xs">
-                    {{ resultado.status }}
+                  <span :class="['Finalizó', 'Doblado'].includes(resultado.estado) ? 'text-green-400' : 'text-red-400'" class="text-xs">
+                    {{ resultado.estado }}
                   </span>
                 </td>
-                <td class="py-3 text-right text-zinc-300 font-mono">{{ resultado.points_official }}</td>
-                <td class="py-3 text-right font-bold" :class="resultado.fantasy_points > 0 ? 'text-red-400' : 'text-zinc-600'">
-                  {{ resultado.fantasy_points || '—' }}
+                <td class="py-3 text-right text-zinc-300 font-mono">{{ resultado.puntos_oficiales }}</td>
+                <td class="py-3 text-right font-bold" :class="resultado.puntos_fantasy > 0 ? 'text-red-400' : 'text-zinc-600'">
+                  {{ resultado.puntos_fantasy || '—' }}
                 </td>
               </tr>
             </tbody>
@@ -89,7 +89,7 @@ const carrera = ref(null)
 const cargando = ref(false)
 
 const resultadosOrdenados = computed(() =>
-  [...(carrera.value?.resultados || [])].sort((a, b) => (a.finish_position || 99) - (b.finish_position || 99))
+  [...(carrera.value?.resultados || [])].sort((a, b) => (a.posicion_final || 99) - (b.posicion_final || 99))
 )
 
 function formatearFecha(d) {

@@ -7,22 +7,22 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PuntosEquipoCarrera extends Model
 {
-    protected $table = 'fantasy_team_race_points';
+    protected $table = 'puntos_equipo_carrera';
 
-    protected $fillable = ['fantasy_team_id', 'race_id', 'points_earned', 'breakdown'];
+    protected $fillable = ['equipo_fantasy_id', 'carrera_id', 'puntos_obtenidos', 'desglose'];
 
     protected function casts(): array
     {
-        return ['breakdown' => 'array'];
+        return ['desglose' => 'array'];
     }
 
     public function equipo(): BelongsTo
     {
-        return $this->belongsTo(EquipoFantasy::class, 'fantasy_team_id');
+        return $this->belongsTo(EquipoFantasy::class, 'equipo_fantasy_id');
     }
 
     public function carrera(): BelongsTo
     {
-        return $this->belongsTo(Carrera::class, 'race_id');
+        return $this->belongsTo(Carrera::class, 'carrera_id');
     }
 }

@@ -8,39 +8,40 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Piloto extends Model
 {
-    protected $table = 'drivers';
+    protected $table = 'pilotos';
 
     protected $fillable = [
-        'api_id', 'code', 'number', 'first_name', 'last_name',
-        'nationality', 'date_of_birth', 'photo', 'constructor_id', 'price', 'is_active', 'es_reserva',
+        'api_id', 'codigo', 'numero', 'nombre', 'apellido',
+        'nacionalidad', 'fecha_nacimiento', 'foto', 'escuderia_id',
+        'precio', 'activo', 'es_reserva',
     ];
 
     protected function casts(): array
     {
         return [
-            'date_of_birth' => 'date',
-            'is_active'     => 'boolean',
-            'es_reserva'    => 'boolean',
+            'fecha_nacimiento' => 'date',
+            'activo'           => 'boolean',
+            'es_reserva'       => 'boolean',
         ];
     }
 
     public function getNombreCompletoAttribute(): string
     {
-        return "{$this->first_name} {$this->last_name}";
+        return "{$this->nombre} {$this->apellido}";
     }
 
     public function getPrecioFormateadoAttribute(): string
     {
-        return number_format($this->price / 1_000_000, 1) . 'M';
+        return number_format($this->precio / 1_000_000, 1) . 'M';
     }
 
     public function escuderia(): BelongsTo
     {
-        return $this->belongsTo(Escuderia::class, 'constructor_id');
+        return $this->belongsTo(Escuderia::class, 'escuderia_id');
     }
 
     public function resultados(): HasMany
     {
-        return $this->hasMany(ResultadoCarrera::class, 'driver_id');
+        return $this->hasMany(ResultadoCarrera::class, 'piloto_id');
     }
 }

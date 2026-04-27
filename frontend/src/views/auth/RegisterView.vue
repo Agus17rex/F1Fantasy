@@ -14,11 +14,11 @@
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-sm text-zinc-400 mb-1.5">Nombre</label>
-              <input v-model="form.name" type="text" class="input" placeholder="Tu nombre" required />
+              <input v-model="form.nombre" type="text" class="input" placeholder="Tu nombre" required />
             </div>
             <div>
               <label class="block text-sm text-zinc-400 mb-1.5">Usuario</label>
-              <input v-model="form.username" type="text" class="input" placeholder="usuario123" required />
+              <input v-model="form.usuario" type="text" class="input" placeholder="usuario123" required />
             </div>
           </div>
 
@@ -67,7 +67,7 @@ const authStore = useAuthStore()
 const router    = useRouter()
 
 const form = ref({
-  name: '', username: '', email: '',
+  nombre: '', usuario: '', email: '',
   password: '', password_confirmation: '',
 })
 const loading = ref(false)

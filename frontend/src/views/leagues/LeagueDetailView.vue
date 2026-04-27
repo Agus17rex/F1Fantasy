@@ -5,13 +5,13 @@
     <div v-if="liga" class="card border-l-4 border-l-red-500">
       <div class="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h2 class="text-2xl font-black text-white">{{ liga.name }}</h2>
-          <p v-if="liga.description" class="text-zinc-400 text-sm mt-0.5">{{ liga.description }}</p>
+          <h2 class="text-2xl font-black text-white">{{ liga.nombre }}</h2>
+          <p v-if="liga.descripcion" class="text-zinc-400 text-sm mt-0.5">{{ liga.descripcion }}</p>
           <div class="flex items-center gap-3 mt-2 flex-wrap">
-            <span class="text-zinc-500 text-xs">{{ liga.members_count }} miembros</span>
-            <span class="text-xs bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded font-mono">{{ liga.code }}</span>
-            <span class="text-xs" :class="liga.is_private ? 'text-amber-400' : 'text-green-400'">
-              {{ liga.is_private ? '🔒 Privada' : '🌐 Pública' }}
+            <span class="text-zinc-500 text-xs">{{ liga.miembros_count }} miembros</span>
+            <span class="text-xs bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded font-mono">{{ liga.codigo }}</span>
+            <span class="text-xs" :class="liga.es_privada ? 'text-amber-400' : 'text-green-400'">
+              {{ liga.es_privada ? '🔒 Privada' : '🌐 Pública' }}
             </span>
             <span class="text-xs text-red-400 font-semibold">
               💰 {{ M(liga.presupuesto_inicial) }} por equipo
@@ -64,15 +64,15 @@
           </div>
           <!-- Avatar -->
           <div class="w-9 h-9 rounded-full bg-red-600/80 flex items-center justify-center text-sm font-bold flex-shrink-0">
-            {{ entrada.usuario.name.charAt(0).toUpperCase() }}
+            {{ entrada.usuario.nombre.charAt(0).toUpperCase() }}
           </div>
           <!-- Nombre -->
           <div class="flex-1 min-w-0">
             <p class="font-semibold text-white text-sm truncate">
-              {{ entrada.usuario.name }}
+              {{ entrada.usuario.nombre }}
               <span v-if="entrada.usuario.id === authStore.user?.id" class="text-red-400 text-xs ml-1">(tú)</span>
             </p>
-            <p class="text-zinc-500 text-xs">@{{ entrada.usuario.username }}</p>
+            <p class="text-zinc-500 text-xs">@{{ entrada.usuario.usuario }}</p>
           </div>
           <!-- Puntos + icono -->
           <div class="text-right flex-shrink-0 flex items-center gap-3">
@@ -112,13 +112,15 @@
           <div v-for="piloto in pilotosFiltrados" :key="piloto.id"
             class="card !p-3 flex items-center gap-3"
           >
-            <div class="w-1 h-10 rounded-full flex-shrink-0"
-              :style="{ backgroundColor: piloto.escuderia?.color || '#888' }"></div>
+            <AvatarPiloto :piloto="piloto" size="md" />
             <div class="flex-1 min-w-0">
-              <p class="text-white text-sm font-semibold">{{ piloto.first_name }} <strong>{{ piloto.last_name }}</strong></p>
-              <p class="text-zinc-500 text-xs">{{ piloto.escuderia?.name || '—' }}</p>
+              <p class="text-white text-sm font-semibold">{{ piloto.nombre }} <strong>{{ piloto.apellido }}</strong></p>
+              <p class="text-zinc-500 text-xs flex items-center gap-1.5">
+                <LogoEscuderia :escuderia="piloto.escuderia" size="xs" />
+                {{ piloto.escuderia?.nombre || '—' }}
+              </p>
             </div>
-            <p class="text-red-400 font-bold text-sm flex-shrink-0">{{ M(piloto.price) }}</p>
+            <p class="text-red-400 font-bold text-sm flex-shrink-0">{{ M(piloto.precio) }}</p>
             <!-- Botones compra/venta/robo -->
             <div class="flex-shrink-0">
               <template v-if="piloto.en_equipo">
@@ -130,13 +132,13 @@
               </template>
               <template v-else-if="piloto.en_equipo_ajeno">
                 <div class="flex flex-col items-end gap-1">
-                  <span class="text-xs text-zinc-500">{{ piloto.propietario?.name }}</span>
+                  <span class="text-xs text-zinc-500">{{ piloto.propietario?.nombre }}</span>
                   <span v-if="piloto.protegido"
                     class="text-xs bg-zinc-800 text-zinc-500 border border-zinc-700 px-2 py-1 rounded">
                     🛡️ {{ piloto.dias_proteccion }}d
                   </span>
                   <button v-else @click="robar('piloto', piloto)"
-                    :disabled="!puedoComprar(piloto.price)"
+                    :disabled="!puedoComprar(piloto.precio)"
                     class="text-xs bg-orange-600 hover:bg-orange-500 disabled:bg-zinc-800 disabled:text-zinc-600 text-white px-3 py-1 rounded transition-colors">
                     🔄 Robar
                   </button>
@@ -144,7 +146,7 @@
               </template>
               <template v-else>
                 <button @click="comprarPiloto(piloto)"
-                  :disabled="!puedoComprar(piloto.price)"
+                  :disabled="!puedoComprar(piloto.precio)"
                   class="text-xs bg-red-600 hover:bg-red-500 disabled:bg-zinc-800 disabled:text-zinc-600 text-white px-3 py-1 rounded transition-colors">
                   Comprar
                 </button>
@@ -159,13 +161,12 @@
           <div v-for="escuderia in escuderiasFiltradas" :key="escuderia.id"
             class="card !p-3 flex items-center gap-3"
           >
-            <div class="w-3 h-3 rounded-full flex-shrink-0"
-              :style="{ backgroundColor: escuderia.color || '#888' }"></div>
+            <LogoEscuderia :escuderia="escuderia" size="md" />
             <div class="flex-1 min-w-0">
-              <p class="text-white text-sm font-semibold">{{ escuderia.name }}</p>
-              <p class="text-zinc-500 text-xs">{{ escuderia.nationality }}</p>
+              <p class="text-white text-sm font-semibold">{{ escuderia.nombre }}</p>
+              <p class="text-zinc-500 text-xs">{{ escuderia.nacionalidad }}</p>
             </div>
-            <p class="text-red-400 font-bold text-sm flex-shrink-0">{{ M(escuderia.price) }}</p>
+            <p class="text-red-400 font-bold text-sm flex-shrink-0">{{ M(escuderia.precio) }}</p>
             <div class="flex-shrink-0">
               <template v-if="escuderia.en_equipo">
                 <span class="text-xs text-green-400 mr-2">✓ En equipo</span>
@@ -176,20 +177,20 @@
               </template>
               <template v-else-if="escuderia.en_equipo_ajeno">
                 <div class="flex flex-col items-end gap-1">
-                  <span class="text-xs text-zinc-500">{{ escuderia.propietario?.name }}</span>
+                  <span class="text-xs text-zinc-500">{{ escuderia.propietario?.nombre }}</span>
                   <span v-if="escuderia.protegido"
                     class="text-xs bg-zinc-800 text-zinc-500 border border-zinc-700 px-2 py-1 rounded">
                     🛡️ {{ escuderia.dias_proteccion }}d
                   </span>
                   <button v-else @click="robar('escuderia', escuderia)"
-                    :disabled="!puedoComprar(escuderia.price)"
+                    :disabled="!puedoComprar(escuderia.precio)"
                     class="text-xs bg-orange-600 hover:bg-orange-500 disabled:bg-zinc-800 disabled:text-zinc-600 text-white px-3 py-1 rounded transition-colors">
                     🔄 Robar
                   </button>
                 </div>
               </template>
               <button v-else @click="comprar('escuderia', escuderia)"
-                :disabled="!puedoComprar(escuderia.price)"
+                :disabled="!puedoComprar(escuderia.precio)"
                 class="text-xs bg-red-600 hover:bg-red-500 disabled:bg-zinc-800 disabled:text-zinc-600 text-white px-3 py-1 rounded transition-colors">
                 Comprar
               </button>
@@ -203,15 +204,15 @@
           <div v-for="director in directoresFiltrados" :key="director.id"
             class="card !p-3 flex items-center gap-3"
           >
-            <div class="w-8 h-8 rounded-full bg-zinc-700 flex items-center justify-center text-sm flex-shrink-0"
-              :style="director.escuderia ? { borderLeft: '3px solid ' + director.escuderia.color } : {}">
-              🎩
-            </div>
+            <AvatarDirector :director="director" size="md" />
             <div class="flex-1 min-w-0">
-              <p class="text-white text-sm font-semibold">{{ director.name }}</p>
-              <p class="text-zinc-500 text-xs">{{ director.escuderia?.name || '—' }} · {{ director.nationality }}</p>
+              <p class="text-white text-sm font-semibold">{{ director.nombre }}</p>
+              <p class="text-zinc-500 text-xs flex items-center gap-1.5">
+                <LogoEscuderia :escuderia="director.escuderia" size="xs" />
+                {{ director.escuderia?.nombre || '—' }} · {{ director.nacionalidad }}
+              </p>
             </div>
-            <p class="text-red-400 font-bold text-sm flex-shrink-0">{{ M(director.price) }}</p>
+            <p class="text-red-400 font-bold text-sm flex-shrink-0">{{ M(director.precio) }}</p>
             <div class="flex-shrink-0">
               <template v-if="director.en_equipo">
                 <span class="text-xs text-green-400 mr-2">✓ Director</span>
@@ -222,20 +223,20 @@
               </template>
               <template v-else-if="director.en_equipo_ajeno">
                 <div class="flex flex-col items-end gap-1">
-                  <span class="text-xs text-zinc-500">{{ director.propietario?.name }}</span>
+                  <span class="text-xs text-zinc-500">{{ director.propietario?.nombre }}</span>
                   <span v-if="director.protegido"
                     class="text-xs bg-zinc-800 text-zinc-500 border border-zinc-700 px-2 py-1 rounded">
                     🛡️ {{ director.dias_proteccion }}d
                   </span>
                   <button v-else @click="robar('director', director)"
-                    :disabled="!puedoComprar(director.price)"
+                    :disabled="!puedoComprar(director.precio)"
                     class="text-xs bg-orange-600 hover:bg-orange-500 disabled:bg-zinc-800 disabled:text-zinc-600 text-white px-3 py-1 rounded transition-colors">
                     🔄 Robar
                   </button>
                 </div>
               </template>
               <button v-else @click="comprar('director', director)"
-                :disabled="!puedoComprar(director.price)"
+                :disabled="!puedoComprar(director.precio)"
                 class="text-xs bg-red-600 hover:bg-red-500 disabled:bg-zinc-800 disabled:text-zinc-600 text-white px-3 py-1 rounded transition-colors">
                 Comprar
               </button>
@@ -273,9 +274,10 @@
           <SlotEquipoCard titulo="🎩 Director" subtitulo="puntos del equipo ÷ 2" :max="1">
             <div v-for="d in directores" :key="d.id"
               class="flex items-center gap-2 p-2 rounded-lg bg-zinc-800/50">
+              <AvatarDirector :director="d" size="sm" />
               <div class="flex-1 min-w-0">
-                <p class="text-white text-sm font-medium truncate">{{ d.name }}</p>
-                <p class="text-zinc-500 text-xs">{{ d.escuderia?.name }} · {{ M(d.price) }}</p>
+                <p class="text-white text-sm font-medium truncate">{{ d.nombre }}</p>
+                <p class="text-zinc-500 text-xs">{{ d.escuderia?.nombre }} · {{ M(d.precio) }}</p>
               </div>
               <button @click="venderDesdeEquipo('director', d)"
                 class="text-zinc-600 hover:text-red-400 text-xs px-1 transition-colors">✕</button>
@@ -287,11 +289,10 @@
           <SlotEquipoCard titulo="🏎️ Escudería" subtitulo="suma puntos de sus 2 pilotos" :max="1">
             <div v-for="e in escuderias" :key="e.id"
               class="flex items-center gap-2 p-2 rounded-lg bg-zinc-800/50">
-              <div class="w-3 h-3 rounded-full flex-shrink-0"
-                :style="{ backgroundColor: e.color || '#888' }"></div>
+              <LogoEscuderia :escuderia="e" size="sm" />
               <div class="flex-1 min-w-0">
-                <p class="text-white text-sm font-medium">{{ e.name }}</p>
-                <p class="text-zinc-500 text-xs">{{ M(e.price) }}</p>
+                <p class="text-white text-sm font-medium">{{ e.nombre }}</p>
+                <p class="text-zinc-500 text-xs">{{ M(e.precio) }}</p>
               </div>
               <button @click="venderDesdeEquipo('escuderia', e)"
                 class="text-zinc-600 hover:text-red-400 text-xs px-1 transition-colors">✕</button>
@@ -357,7 +358,7 @@
             <p class="text-zinc-600 text-xs font-semibold uppercase tracking-wider mb-2">Pilotos</p>
             <div v-for="piloto in p.desglose.pilotos" :key="piloto.id"
               class="flex items-center gap-2 py-1">
-              <div class="w-1 h-5 rounded-full flex-shrink-0"
+              <div class="w-1 h-6 rounded-full flex-shrink-0"
                 :style="{ backgroundColor: piloto.color || '#555' }"></div>
               <span class="text-zinc-300 text-sm flex-1">{{ piloto.nombre }}</span>
               <span class="font-bold text-sm tabular-nums"
@@ -412,11 +413,11 @@
           <div class="flex items-center justify-between mb-4">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-full bg-red-600/80 flex items-center justify-center font-bold text-white flex-shrink-0">
-                {{ modalEquipoAjeno.usuario?.name?.charAt(0).toUpperCase() }}
+                {{ modalEquipoAjeno.usuario?.nombre?.charAt(0).toUpperCase() }}
               </div>
               <div>
-                <p class="font-bold text-white">{{ modalEquipoAjeno.usuario?.name }}</p>
-                <p class="text-zinc-500 text-xs">@{{ modalEquipoAjeno.usuario?.username }}</p>
+                <p class="font-bold text-white">{{ modalEquipoAjeno.usuario?.nombre }}</p>
+                <p class="text-zinc-500 text-xs">@{{ modalEquipoAjeno.usuario?.usuario }}</p>
               </div>
             </div>
             <button @click="modalEquipoAjeno = null"
@@ -432,16 +433,15 @@
               <div class="space-y-1.5">
                 <div v-for="p in (equipoAjeno.pilotos || [])" :key="p.id"
                   class="flex items-center gap-2 p-2 rounded-lg bg-zinc-800/50">
-                  <div class="w-1 h-7 rounded-full flex-shrink-0"
-                    :style="{ backgroundColor: p.escuderia?.color || '#888' }"></div>
+                  <AvatarPiloto :piloto="p" size="sm" />
                   <div class="flex-1 min-w-0">
-                    <p class="text-white text-sm font-medium truncate">{{ p.first_name }} {{ p.last_name }}</p>
-                    <p class="text-zinc-500 text-xs">{{ p.escuderia?.name || '—' }}</p>
+                    <p class="text-white text-sm font-medium truncate">{{ p.nombre }} {{ p.apellido }}</p>
+                    <p class="text-zinc-500 text-xs">{{ p.escuderia?.nombre || '—' }}</p>
                   </div>
-                  <span class="text-red-400 text-xs font-mono font-semibold">{{ M(p.price) }}</span>
-                  <span v-if="p.pivot?.selected_at && diasProteccionRestantes(p.pivot.selected_at) > 0"
+                  <span class="text-red-400 text-xs font-mono font-semibold">{{ M(p.precio) }}</span>
+                  <span v-if="p.pivot?.fecha_seleccion && diasProteccionRestantes(p.pivot.fecha_seleccion) > 0"
                     class="text-xs bg-zinc-700 text-zinc-400 px-1.5 py-0.5 rounded">
-                    🛡️ {{ diasProteccionRestantes(p.pivot.selected_at) }}d
+                    🛡️ {{ diasProteccionRestantes(p.pivot.fecha_seleccion) }}d
                   </span>
                 </div>
                 <p v-if="!equipoAjeno.pilotos?.length"
@@ -455,14 +455,15 @@
               <div class="space-y-1.5">
                 <div v-for="d in (equipoAjeno.directores || [])" :key="d.id"
                   class="flex items-center gap-2 p-2 rounded-lg bg-zinc-800/50">
+                  <AvatarDirector :director="d" size="sm" />
                   <div class="flex-1 min-w-0">
-                    <p class="text-white text-sm font-medium">{{ d.name }}</p>
-                    <p class="text-zinc-500 text-xs">{{ d.escuderia?.name }}</p>
+                    <p class="text-white text-sm font-medium">{{ d.nombre }}</p>
+                    <p class="text-zinc-500 text-xs">{{ d.escuderia?.nombre }}</p>
                   </div>
-                  <span class="text-red-400 text-xs font-mono font-semibold">{{ M(d.price) }}</span>
-                  <span v-if="d.pivot?.selected_at && diasProteccionRestantes(d.pivot.selected_at) > 0"
+                  <span class="text-red-400 text-xs font-mono font-semibold">{{ M(d.precio) }}</span>
+                  <span v-if="d.pivot?.fecha_seleccion && diasProteccionRestantes(d.pivot.fecha_seleccion) > 0"
                     class="text-xs bg-zinc-700 text-zinc-400 px-1.5 py-0.5 rounded">
-                    🛡️ {{ diasProteccionRestantes(d.pivot.selected_at) }}d
+                    🛡️ {{ diasProteccionRestantes(d.pivot.fecha_seleccion) }}d
                   </span>
                 </div>
                 <p v-if="!equipoAjeno.directores?.length"
@@ -476,13 +477,12 @@
               <div class="space-y-1.5">
                 <div v-for="e in (equipoAjeno.escuderias || [])" :key="e.id"
                   class="flex items-center gap-2 p-2 rounded-lg bg-zinc-800/50">
-                  <div class="w-3 h-3 rounded-full flex-shrink-0"
-                    :style="{ backgroundColor: e.color || '#888' }"></div>
-                  <p class="flex-1 text-white text-sm font-medium">{{ e.name }}</p>
-                  <span class="text-red-400 text-xs font-mono font-semibold">{{ M(e.price) }}</span>
-                  <span v-if="e.pivot?.selected_at && diasProteccionRestantes(e.pivot.selected_at) > 0"
+                  <LogoEscuderia :escuderia="e" size="sm" />
+                  <p class="flex-1 text-white text-sm font-medium">{{ e.nombre }}</p>
+                  <span class="text-red-400 text-xs font-mono font-semibold">{{ M(e.precio) }}</span>
+                  <span v-if="e.pivot?.fecha_seleccion && diasProteccionRestantes(e.pivot.fecha_seleccion) > 0"
                     class="text-xs bg-zinc-700 text-zinc-400 px-1.5 py-0.5 rounded">
-                    🛡️ {{ diasProteccionRestantes(e.pivot.selected_at) }}d
+                    🛡️ {{ diasProteccionRestantes(e.pivot.fecha_seleccion) }}d
                   </span>
                 </div>
                 <p v-if="!equipoAjeno.escuderias?.length"
@@ -507,6 +507,9 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { ligaService, equipoService } from '@/services/leagueService'
+import AvatarPiloto    from '@/components/media/AvatarPiloto.vue'
+import LogoEscuderia   from '@/components/media/LogoEscuderia.vue'
+import AvatarDirector  from '@/components/media/AvatarDirector.vue'
 
 const route     = useRoute()
 const authStore = useAuthStore()
@@ -533,7 +536,7 @@ const toast           = ref('')
 let   timerToast      = null
 
 // ─── Estado: equipo de otro usuario ──────────────────────────────────────────
-const modalEquipoAjeno    = ref(null)   // { usuario: { id, name, username } }
+const modalEquipoAjeno    = ref(null)
 const equipoAjeno         = ref(null)
 const cargandoEquipoAjeno = ref(false)
 
@@ -560,16 +563,16 @@ const pilotosFiltrados = computed(() => {
   const q = busqueda.value.toLowerCase()
   return (mercado.value.pilotos || []).filter(p =>
     !q ||
-    p.first_name?.toLowerCase().includes(q) ||
-    p.last_name?.toLowerCase().includes(q) ||
-    p.escuderia?.name?.toLowerCase().includes(q)
+    p.nombre?.toLowerCase().includes(q) ||
+    p.apellido?.toLowerCase().includes(q) ||
+    p.escuderia?.nombre?.toLowerCase().includes(q)
   )
 })
 
 const escuderiasFiltradas = computed(() => {
   const q = busqueda.value.toLowerCase()
   return (mercado.value.escuderias || []).filter(e =>
-    !q || e.name?.toLowerCase().includes(q)
+    !q || e.nombre?.toLowerCase().includes(q)
   )
 })
 
@@ -577,8 +580,8 @@ const directoresFiltrados = computed(() => {
   const q = busqueda.value.toLowerCase()
   return (mercado.value.directores || []).filter(d =>
     !q ||
-    d.name?.toLowerCase().includes(q) ||
-    d.escuderia?.name?.toLowerCase().includes(q)
+    d.nombre?.toLowerCase().includes(q) ||
+    d.escuderia?.nombre?.toLowerCase().includes(q)
   )
 })
 
@@ -597,9 +600,9 @@ function mostrarToast(msg) {
 }
 
 // ─── Ver equipo de otro usuario ───────────────────────────────────────────────
-function diasProteccionRestantes(selectedAt) {
-  if (!selectedAt) return 0
-  const diasPasados = Math.floor((Date.now() - new Date(selectedAt).getTime()) / 86_400_000)
+function diasProteccionRestantes(fechaSeleccion) {
+  if (!fechaSeleccion) return 0
+  const diasPasados = Math.floor((Date.now() - new Date(fechaSeleccion).getTime()) / 86_400_000)
   return Math.max(0, 7 - diasPasados)
 }
 
@@ -730,8 +733,8 @@ onMounted(async () => {
 <!-- ── Componentes inline ──────────────────────────────────────────────────── -->
 <script>
 import { defineComponent, h } from 'vue'
+import AvatarPilotoCmp from '@/components/media/AvatarPiloto.vue'
 
-// SlotEquipoCard — tarjeta de un slot del equipo
 const SlotEquipoCard = defineComponent({
   props: { titulo: String, subtitulo: String, max: Number },
   setup(props, { slots }) {
@@ -745,21 +748,17 @@ const SlotEquipoCard = defineComponent({
   }
 })
 
-// FilaPiloto — fila de un piloto en Mi Equipo
 const FilaPiloto = defineComponent({
   props: { piloto: Object },
   emits: ['vender'],
   setup(props, { emit }) {
     return () => h('div', { class: 'flex items-center gap-2 p-2 rounded-lg bg-zinc-800/50' }, [
-      h('div', {
-        class: 'w-1 h-7 rounded-full flex-shrink-0',
-        style: { backgroundColor: props.piloto.escuderia?.color || '#888' }
-      }),
+      h(AvatarPilotoCmp, { piloto: props.piloto, size: 'sm' }),
       h('div', { class: 'flex-1 min-w-0' }, [
         h('p', { class: 'text-white text-sm font-medium truncate' },
-          `${props.piloto.first_name} ${props.piloto.last_name}`),
+          `${props.piloto.nombre} ${props.piloto.apellido}`),
         h('p', { class: 'text-zinc-500 text-xs' },
-          `${props.piloto.escuderia?.name || '—'} · ${(props.piloto.price / 1_000_000).toFixed(1)}M`)
+          `${props.piloto.escuderia?.nombre || '—'} · ${(props.piloto.precio / 1_000_000).toFixed(1)}M`)
       ]),
       h('button', {
         onClick: () => emit('vender'),
@@ -769,7 +768,6 @@ const FilaPiloto = defineComponent({
   }
 })
 
-// SlotVacio — placeholder para slot vacío
 const SlotVacio = defineComponent({
   setup() {
     return () => h('p', {

@@ -7,7 +7,7 @@ export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('auth_token'))
 
   const isAuthenticated = computed(() => !!token.value && !!user.value)
-  const isAdmin         = computed(() => user.value?.role === 'admin')
+  const isAdmin         = computed(() => user.value?.rol === 'admin')
 
   async function login(credentials) {
     const { data } = await authService.login(credentials)

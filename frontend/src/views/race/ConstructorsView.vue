@@ -12,14 +12,13 @@
       >
         <div class="h-1.5 rounded-full mb-4 -mt-1" :style="{ backgroundColor: escuderia.color || '#E8002D' }"></div>
 
-        <div class="flex items-start justify-between">
-          <div>
-            <h3 class="font-bold text-white text-lg">{{ escuderia.name }}</h3>
-            <p class="text-zinc-500 text-sm mt-0.5">{{ escuderia.nationality }}</p>
-          </div>
-          <div class="text-right">
-            <p class="text-red-400 font-bold text-xl">{{ formatearPrecio(escuderia.price) }}</p>
-            <p class="text-zinc-500 text-xs">precio fantasy</p>
+        <div class="flex items-start gap-3">
+          <LogoEscuderia :escuderia="escuderia" size="xl" />
+
+          <div class="flex-1 min-w-0">
+            <h3 class="font-bold text-white text-lg leading-tight">{{ escuderia.nombre }}</h3>
+            <p class="text-zinc-500 text-sm mt-0.5">{{ escuderia.nacionalidad }}</p>
+            <p class="text-red-400 font-bold text-xl mt-2">{{ formatearPrecio(escuderia.precio) }}</p>
           </div>
         </div>
 
@@ -34,6 +33,7 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useF1Store } from '@/stores/f1'
+import LogoEscuderia  from '@/components/media/LogoEscuderia.vue'
 
 const f1Store = useF1Store()
 
