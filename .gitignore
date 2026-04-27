@@ -1,0 +1,48 @@
+# Dependencias backend
+/backend/vendor/
+/backend/node_modules/
+
+# Dependencias frontend
+/frontend/node_modules/
+
+# Variables de entorno
+/backend/.env
+/frontend/.env
+/frontend/.env.local
+.env
+
+# Logs
+/backend/storage/logs/
+*.log
+
+# Cache Laravel
+/backend/bootstrap/cache/
+backend/storage/framework/cache/
+backend/storage/framework/sessions/
+backend/storage/framework/views/
+
+# Archivos generados
+/backend/public/storage
+/backend/storage/*.key
+
+# IDE / sistema
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Builds frontend
+/frontend/dist/
+
+# Composer / npm debug
+composer.phar
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage/
+.phpunit.result.cache
+
+# Claude
+.claude/
