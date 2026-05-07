@@ -106,9 +106,9 @@
         <p v-if="escuderiasFiltradas.length === 0" class="text-zinc-600 text-center py-6">Sin resultados</p>
       </div>
 
-      <!-- ── Directores ── -->
-      <div v-if="tabActiva === 'directores'" class="card divide-y divide-zinc-800/60">
-        <div v-for="(dir, idx) in directoresFiltrados" :key="dir.id"
+      <!-- ── Coches ── -->
+      <div v-if="tabActiva === 'coches'" class="card divide-y divide-zinc-800/60">
+        <div v-for="(coche, idx) in cochesFiltrados" :key="coche.id"
           class="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
           <div class="w-7 text-center flex-shrink-0">
             <span v-if="idx === 0" class="text-xl">🥇</span>
@@ -116,30 +116,32 @@
             <span v-else-if="idx === 2" class="text-xl">🥉</span>
             <span v-else class="text-zinc-600 text-sm font-mono font-bold">{{ idx + 1 }}</span>
           </div>
-          <AvatarDirector :director="dir" size="lg" />
+          <ImagenCoche :coche="coche" size="lg" />
           <div class="flex-1 min-w-0">
-            <p class="text-white text-sm font-semibold">{{ dir.nombre }}</p>
+            <p class="text-white text-sm font-semibold">{{ coche.nombre }}</p>
             <p class="text-zinc-500 text-xs flex items-center gap-1.5 mt-0.5">
-              <LogoEscuderia :escuderia="dir.escuderia" size="xs" />
-              {{ dir.escuderia?.nombre || '—' }}
+              <LogoEscuderia :escuderia="coche.escuderia" size="xs" />
+              {{ coche.escuderia?.nombre || '—' }}
             </p>
           </div>
-          <p class="text-zinc-500 text-xs flex-shrink-0 hidden sm:block">{{ M(dir.precio) }}</p>
+          <p class="text-zinc-500 text-xs flex-shrink-0 hidden sm:block">{{ M(coche.precio) }}</p>
           <div class="flex items-center gap-3 flex-shrink-0">
             <div class="w-24 hidden md:block">
               <div class="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
-                <div class="h-full bg-red-600 rounded-full transition-all"
-                  :style="{ width: maxPtsDirectores > 0 ? (dir.total_fantasy_pts / maxPtsDirectores * 100) + '%' : '0%' }">
-                </div>
+                <div class="h-full rounded-full transition-all"
+                  :style="{
+                    width: maxPtsCoches > 0 ? (coche.total_fantasy_pts / maxPtsCoches * 100) + '%' : '0%',
+                    backgroundColor: coche.escuderia?.color || '#e53e3e'
+                  }"></div>
               </div>
             </div>
             <p class="font-black text-lg text-white tabular-nums w-14 text-right">
-              {{ dir.total_fantasy_pts }}
+              {{ coche.total_fantasy_pts }}
             </p>
             <p class="text-zinc-600 text-xs w-6">pts</p>
           </div>
         </div>
-        <p v-if="directoresFiltrados.length === 0" class="text-zinc-600 text-center py-6">Sin resultados</p>
+        <p v-if="cochesFiltrados.length === 0" class="text-zinc-600 text-center py-6">Sin resultados</p>
       </div>
     </template>
 
@@ -151,7 +153,7 @@ import { ref, computed, onMounted } from 'vue'
 import { f1Service } from '@/services/f1Service'
 import AvatarPiloto from '@/components/media/AvatarPiloto.vue'
 import LogoEscuderia from '@/components/media/LogoEscuderia.vue'
-import AvatarDirector from '@/components/media/AvatarDirector.vue'
+import ImagenCoche from '@/components/media/ImagenCoche.vue'
 
 const cargando   = ref(false)
 const busqueda   = ref('')
@@ -159,12 +161,12 @@ const tabActiva  = ref('pilotos')
 
 const pilotos    = ref([])
 const escuderias = ref([])
-const directores = ref([])
+const coches     = ref([])
 
 const TABS = [
-  { id: 'pilotos',    label: 'Pilotos',    icono: '🏎' },
-  { id: 'escuderias', label: 'Escuderías', icono: '🏁' },
-  { id: 'directores', label: 'Directores', icono: '🎩' },
+  { id: 'pilotos',    label: 'Pilotos',    icono: '🏁' },
+  { id: 'escuderias', label: 'Escuderías', icono: '🏆' },
+  { id: 'coches',     label: 'Coches',     icono: '🏎️' },
 ]
 
 const sinDatos = computed(() =>
@@ -175,7 +177,7 @@ const sinDatos = computed(() =>
 
 const maxPtsPilotos    = computed(() => Math.max(1, ...pilotos.value.map(p => p.total_fantasy_pts)))
 const maxPtsEscuderias = computed(() => Math.max(1, ...escuderias.value.map(e => e.total_fantasy_pts)))
-const maxPtsDirectores = computed(() => Math.max(1, ...directores.value.map(d => d.total_fantasy_pts)))
+const maxPtsCoches     = computed(() => Math.max(1, ...coches.value.map(c => c.total_fantasy_pts)))
 
 const pilotosFiltrados = computed(() => {
   const q = busqueda.value.toLowerCase()
@@ -192,12 +194,12 @@ const escuderiasFiltradas = computed(() => {
   return escuderias.value.filter(e => !q || e.nombre?.toLowerCase().includes(q))
 })
 
-const directoresFiltrados = computed(() => {
+const cochesFiltrados = computed(() => {
   const q = busqueda.value.toLowerCase()
-  return directores.value.filter(d =>
+  return coches.value.filter(c =>
     !q ||
-    d.nombre?.toLowerCase().includes(q) ||
-    d.escuderia?.nombre?.toLowerCase().includes(q)
+    c.nombre?.toLowerCase().includes(q) ||
+    c.escuderia?.nombre?.toLowerCase().includes(q)
   )
 })
 
@@ -209,7 +211,7 @@ onMounted(async () => {
     const { data } = await f1Service.getFantasyRanking()
     pilotos.value    = data.pilotos
     escuderias.value = data.escuderias
-    directores.value = data.directores
+    coches.value     = data.coches
   } finally {
     cargando.value = false
   }

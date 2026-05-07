@@ -18,6 +18,9 @@ export const f1Service = {
   getClasificacionPilotos:    () => api.get('/f1/clasificacion/pilotos'),
   getClasificacionEscuderias: () => api.get('/f1/clasificacion/escuderias'),
 
+  // Coches
+  getCoches: () => api.get('/f1/coches'),
+
   // Ranking fantasy global
   getFantasyRanking: () => api.get('/f1/fantasy-ranking'),
 }

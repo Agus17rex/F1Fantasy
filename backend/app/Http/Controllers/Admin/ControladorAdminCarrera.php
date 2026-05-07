@@ -66,9 +66,11 @@ class ControladorAdminCarrera extends Controller
 
     public function carreras(): JsonResponse
     {
+        $temporada = Carrera::max('temporada') ?? now()->year;
+
         $carreras = Carrera::with(['circuito', 'resultados'])
             ->withCount('resultados')
-            ->where('temporada', now()->year)
+            ->where('temporada', $temporada)
             ->orderBy('fecha')
             ->get();
 
@@ -91,18 +93,69 @@ class ControladorAdminCarrera extends Controller
         return response()->json(['message' => 'Precios recalculados correctamente según la clasificación del campeonato']);
     }
 
+    public function puntuacionCarrera(Carrera $carrera): JsonResponse
+    {
+        $reglas = \App\Models\ReglaPuntuacion::where('activa', true)->get()->keyBy('evento');
+
+        $resultados = $carrera->resultados()
+            ->with(['piloto', 'escuderia'])
+            ->orderBy('posicion_final')
+            ->get();
+
+        $filas = $resultados->map(fn($r) => [
+            'piloto'                 => $r->piloto?->nombre . ' ' . $r->piloto?->apellido,
+            'escuderia'              => $r->escuderia?->nombre,
+            'posicion_final'         => $r->posicion_final,
+            'posicion_clasificacion' => $r->posicion_clasificacion,
+            'estado'                 => $r->estado,
+            'vuelta_rapida'          => $r->vuelta_rapida,
+            'piloto_del_dia'         => $r->piloto_del_dia,
+            'puntos_carrera'         => $r->puntos_carrera,
+            'puntos_velocidad'       => $r->puntos_velocidad,
+            'puntos_fantasy'         => $r->puntos_fantasy,
+        ]);
+
+        // Agrupado por escudería para ver pts de escudería y coche
+        $porEscuderia = $resultados->groupBy('escuderia_id')->map(function ($grupo) use ($reglas) {
+            $sumaCarrera = $grupo->sum('puntos_carrera');
+            $sumaQuali   = $grupo->sum(function ($r) use ($reglas) {
+                $ev = 'QUALI_P' . $r->posicion_clasificacion;
+                return ($r->posicion_clasificacion && isset($reglas[$ev])) ? $reglas[$ev]->puntos : 0;
+            });
+
+            return [
+                'escuderia'     => $grupo->first()->escuderia?->nombre,
+                'suma_carrera'  => $sumaCarrera,
+                'suma_qualy'    => $sumaQuali,
+                'pts_escuderia' => (int) round($sumaCarrera / 2),
+                'pts_coche'     => (int) round($sumaQuali / 2),
+            ];
+        })->sortBy('escuderia')->values();
+
+        return response()->json([
+            'carrera'       => $carrera->nombre,
+            'estado'        => $carrera->estado,
+            'resultados'    => $filas,
+            'por_escuderia' => $porEscuderia,
+        ]);
+    }
+
     public function panelControl(): JsonResponse
     {
+        // Usar la temporada más reciente que haya en la BD
+        $temporada = Carrera::max('temporada') ?? now()->year;
+
         return response()->json([
             'estadisticas' => [
                 'total_usuarios'      => User::count(),
                 'total_ligas'         => Liga::count(),
                 'total_equipos'       => EquipoFantasy::count(),
-                'carreras_puntuadas'  => Carrera::where('temporada', now()->year)->where('estado', 'scored')->count(),
-                'carreras_pendientes' => Carrera::where('temporada', now()->year)->where('estado', 'upcoming')->count(),
+                'carreras_puntuadas'  => Carrera::where('temporada', $temporada)->where('estado', 'scored')->count(),
+                'carreras_pendientes' => Carrera::where('temporada', $temporada)->where('estado', 'upcoming')->count(),
             ],
             'carreras_recientes' => Carrera::with('circuito')
-                ->where('temporada', now()->year)
+                ->where('temporada', $temporada)
+                ->where('fecha', '<=', now()->toDateString())
                 ->orderByDesc('fecha')
                 ->limit(5)
                 ->get(),

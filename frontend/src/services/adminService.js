@@ -7,4 +7,5 @@ export const adminService = {
   sincronizarResultados:(id)     => api.post(`/admin/carreras/${id}/sincronizar`),
   puntuarCarrera:       (id)     => api.post(`/admin/carreras/${id}/puntuar`),
   actualizarPrecios:    (season) => api.post('/admin/precios', { season }),
+  getPuntuacionCarrera: (id)     => api.get(`/admin/carreras/${id}/puntuacion`),
 }

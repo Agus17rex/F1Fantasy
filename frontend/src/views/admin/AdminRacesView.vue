@@ -115,7 +115,7 @@ function claseBadge(estado) {
 }
 
 function etiquetaEstado(estado) {
-  return { upcoming: 'Próxima', active: 'En curso', scored: 'Puntuada', cancelled: 'Cancelada' }[estado] || estado
+  return { upcoming: 'Próxima', active: 'Por puntuar', scored: 'Puntuada', cancelled: 'Cancelada' }[estado] || estado
 }
 
 onMounted(cargarCarreras)

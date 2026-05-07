@@ -67,7 +67,7 @@
             </div>
             <div>
               <label class="block text-sm text-zinc-400 mb-1.5">Máximo de miembros</label>
-              <input v-model.number="formularioCrear.max_miembros" type="number" class="input" min="2" max="50" />
+              <input v-model.number="formularioCrear.max_miembros" type="number" class="input" min="2" max="11" />
             </div>
             <div>
               <label class="block text-sm text-zinc-400 mb-1.5">
@@ -80,13 +80,13 @@
                   type="number"
                   class="input w-28 text-center"
                   min="10"
-                  max="200"
+                  max="500"
                   step="5"
                 />
                 <span class="text-zinc-400 text-sm">millones €</span>
               </div>
               <p class="text-zinc-600 text-xs mt-1">
-                Mín. 10M · Máx. 200M · Recomendado: 30–60M
+                Mín. 10M · Máx. 500M · Recomendado: 100–200M
               </p>
             </div>
             <p v-if="errorCrear" class="text-red-400 text-sm">{{ errorCrear }}</p>
@@ -146,8 +146,8 @@ const errorUnirse   = ref('')
 const cargandoUnirse = ref(false)
 const errorCrear    = ref('')
 const cargandoCrear = ref(false)
-const formularioCrear  = ref({ nombre: '', descripcion: '', max_miembros: 20, es_privada: true })
-const presupuestoMillon = ref(50)   // valor en millones que ve el usuario
+const formularioCrear  = ref({ nombre: '', descripcion: '', max_miembros: 11, es_privada: true })
+const presupuestoMillon = ref(100)   // valor en millones que ve el usuario
 
 async function cargarLigas() {
   cargando.value = true

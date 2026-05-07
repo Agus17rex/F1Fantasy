@@ -21,7 +21,7 @@
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2">
             <h3 class="font-semibold text-white truncate">{{ carrera.nombre }}</h3>
-            <span :class="claseBadge(carrera.estado)">{{ etiquetaEstado(carrera.estado) }}</span>
+            <span v-if="calcularBadge(carrera)" :class="claseBadge(carrera)">{{ etiquetaBadge(carrera) }}</span>
           </div>
           <p class="text-zinc-400 text-sm truncate">{{ carrera.circuito?.nombre }} · {{ carrera.circuito?.pais }}</p>
         </div>
@@ -40,24 +40,78 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useF1Store } from '@/stores/f1'
 
-const f1Store       = useF1Store()
+const f1Store         = useF1Store()
 const temporadaActual = new Date().getFullYear()
 
 function formatearFecha(fecha) {
   return new Date(fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
 }
 
-function claseBadge(estado) {
-  return { upcoming: 'badge-upcoming', active: 'badge-active', scored: 'badge-scored' }[estado] || 'badge-scored'
+// ID de la próxima carrera (solo una recibe el badge "Próxima")
+const idProxima = computed(() => {
+  const hoy = new Date()
+  hoy.setHours(0, 0, 0, 0)
+  const futura = f1Store.carreras
+    .filter(c => c.estado !== 'scored' && new Date(c.fecha) >= hoy)
+    .sort((a, b) => new Date(a.fecha) - new Date(b.fecha))
+  // Excluir la que esté en semana de carrera (tiene su propio badge)
+  const sinSemana = futura.filter(c => !esSemanaCarrera(c.fecha))
+  return sinSemana[0]?.id ?? null
+})
+
+function lunesDeSemana(fecha) {
+  const d = new Date(fecha)
+  d.setHours(0, 0, 0, 0)
+  const dia = d.getDay() // 0=dom
+  d.setDate(d.getDate() - (dia === 0 ? 6 : dia - 1))
+  return d
 }
 
-function etiquetaEstado(estado) {
-  return { upcoming: 'Próxima', active: 'En curso', scored: 'Puntuada', cancelled: 'Cancelada' }[estado] || estado
+function esSemanaCarrera(fecha) {
+  const hoy   = new Date(); hoy.setHours(0, 0, 0, 0)
+  const lunes  = lunesDeSemana(fecha)
+  const domingo = new Date(lunes); domingo.setDate(lunes.getDate() + 6)
+  return hoy >= lunes && hoy <= domingo
 }
+
+function esEnCurso(fecha) {
+  if (!esSemanaCarrera(fecha)) return false
+  const diaSemana = new Date().getDay() // 0=dom, 5=vie, 6=sab
+  return diaSemana === 5 || diaSemana === 6 || diaSemana === 0
+}
+
+function calcularBadge(carrera) {
+  const hoy          = new Date(); hoy.setHours(0, 0, 0, 0)
+  const fechaCarrera = new Date(carrera.fecha)
+
+  if (esEnCurso(carrera.fecha))       return 'active'
+  if (esSemanaCarrera(carrera.fecha)) return 'semana'
+  if (fechaCarrera < hoy)             return 'pasada'   // pasada aunque esté puntuada
+  if (carrera.id === idProxima.value) return 'upcoming'
+  return null // sin badge para el resto de futuras
+}
+
+const CLASES = {
+  upcoming: 'badge-upcoming',
+  active:   'badge-active',
+  scored:   'badge-scored',
+  pasada:   'badge-pasada',
+  semana:   'badge-semana',
+}
+const ETIQUETAS = {
+  upcoming: 'Próxima',
+  active:   'En curso',
+  scored:   'Puntuada',
+  pasada:   'Pasada',
+  semana:   'Semana de carrera',
+}
+
+function claseBadge(carrera)    { return CLASES[calcularBadge(carrera)]    ?? '' }
+function etiquetaBadge(carrera) { return ETIQUETAS[calcularBadge(carrera)] ?? '' }
 
 onMounted(() => f1Store.fetchCarreras())
 </script>

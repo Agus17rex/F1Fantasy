@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\Circuito;
-use App\Models\DirectorEquipo;
+use App\Models\Coche;
 use App\Models\Escuderia;
 use App\Models\Piloto;
 use App\Models\Carrera;
@@ -49,12 +49,24 @@ class ServicioApiF1
 
     public function sincronizarPilotos(?int $temporada = null): int
     {
-        $pilotos       = $this->obtenerPilotos($temporada);
-        $sincronizados = 0;
+        // Usamos la clasificación como fuente de verdad: solo los 22 titulares
+        $clasificacion = $this->obtenerClasificacionPilotos($temporada);
 
-        foreach ($pilotos as $datosPiloto) {
+        if (empty($clasificacion)) {
+            Log::warning('sincronizarPilotos: clasificación vacía, abortando');
+            return 0;
+        }
+
+        $apiIdsTitulares = [];
+        $sincronizados   = 0;
+
+        foreach ($clasificacion as $entrada) {
+            $datosPiloto = $entrada['Driver'];
+            $apiId       = $datosPiloto['driverId'];
+            $escuderia   = Escuderia::where('api_id', $entrada['Constructors'][0]['constructorId'] ?? null)->first();
+
             Piloto::updateOrCreate(
-                ['api_id' => $datosPiloto['driverId']],
+                ['api_id' => $apiId],
                 [
                     'codigo'           => $datosPiloto['code'] ?? null,
                     'numero'           => $datosPiloto['permanentNumber'] ?? null,
@@ -63,40 +75,21 @@ class ServicioApiF1
                     'nacionalidad'     => Traducciones::nacionalidad($datosPiloto['nationality'] ?? null),
                     'fecha_nacimiento' => $datosPiloto['dateOfBirth'] ?? null,
                     'activo'           => true,
+                    'es_reserva'       => false,
+                    'escuderia_id'     => $escuderia?->id,
                 ]
             );
+
+            $apiIdsTitulares[] = $apiId;
             $sincronizados++;
         }
 
-        $this->vincularPilotosEscuderias($temporada);
+        // Borrar pilotos que ya no están en la parrilla titular
+        Piloto::whereNotIn('api_id', $apiIdsTitulares)->delete();
+
         $this->actualizarPreciosPilotos($temporada);
 
         return $sincronizados;
-    }
-
-    /**
-     * Asigna a cada piloto su escudería actual (a partir de la clasificación).
-     */
-    private function vincularPilotosEscuderias(?int $temporada = null): void
-    {
-        $clasificacion = $this->obtenerClasificacionPilotos($temporada);
-
-        $pilotosTitulares = collect($clasificacion)->pluck('Driver.driverId')->all();
-
-        foreach ($clasificacion as $entrada) {
-            $piloto    = Piloto::where('api_id', $entrada['Driver']['driverId'])->first();
-            $escuderia = Escuderia::where('api_id', $entrada['Constructors'][0]['constructorId'] ?? null)->first();
-
-            if ($piloto && $escuderia) {
-                $piloto->update([
-                    'escuderia_id' => $escuderia->id,
-                    'es_reserva'   => false,
-                ]);
-            }
-        }
-
-        Piloto::whereNotIn('api_id', $pilotosTitulares)
-            ->update(['activo' => false, 'es_reserva' => true]);
     }
 
     // ─── Escuderías ───────────────────────────────────────────────────────────
@@ -118,6 +111,7 @@ class ServicioApiF1
     {
         $escuderias    = $this->obtenerEscuderias($temporada);
         $sincronizados = 0;
+        $apiIds        = [];
 
         foreach ($escuderias as $datosEscuderia) {
             Escuderia::updateOrCreate(
@@ -128,7 +122,13 @@ class ServicioApiF1
                     'activa'       => true,
                 ]
             );
+            $apiIds[] = $datosEscuderia['constructorId'];
             $sincronizados++;
+        }
+
+        // Desactivar escuderías que ya no aparecen en la API (ej: Sauber → Audi)
+        if (!empty($apiIds)) {
+            Escuderia::whereNotIn('api_id', $apiIds)->update(['activa' => false]);
         }
 
         $this->actualizarPreciosEscuderias($temporada);
@@ -168,16 +168,29 @@ class ServicioApiF1
                 ]
             );
 
+            $fechaCarrera = $datosCarrera['date'];
+            $apiId        = $datosCarrera['season'] . '_' . $datosCarrera['round'];
+            $carreraExistente = Carrera::where('api_id', $apiId)->first();
+
+            // Respetar el estado actual si ya está puntuada o en curso
+            // El sync nunca retrocede un estado (scored → upcoming nunca ocurre)
+            $estadoActual = $carreraExistente?->estado;
+            if (in_array($estadoActual, ['scored', 'active'])) {
+                $estado = $estadoActual;
+            } else {
+                $estado = 'upcoming';
+            }
+
             Carrera::updateOrCreate(
-                ['api_id' => $datosCarrera['season'] . '_' . $datosCarrera['round']],
+                ['api_id' => $apiId],
                 [
                     'temporada'   => (int) $datosCarrera['season'],
                     'ronda'       => (int) $datosCarrera['round'],
                     'nombre'      => $datosCarrera['raceName'],
                     'circuito_id' => $circuito->id,
-                    'fecha'       => $datosCarrera['date'],
+                    'fecha'       => $fechaCarrera,
                     'hora'        => isset($datosCarrera['time']) ? rtrim($datosCarrera['time'], 'Z') : null,
-                    'estado'      => 'upcoming',
+                    'estado'      => $estado,
                 ]
             );
             $sincronizados++;
@@ -329,11 +342,11 @@ class ServicioApiF1
 
             $escuderia->update(['precio' => $precio]);
 
-            DirectorEquipo::where('escuderia_id', $escuderia->id)
-                          ->update(['precio' => (int) round($precio * 0.8)]);
+            Coche::where('escuderia_id', $escuderia->id)
+                ->update(['precio' => (int) round($precio * 0.8)]);
         }
 
-        Log::info("Precios de escuderías y directores actualizados ({$total} equipos)");
+        Log::info("Precios de escuderías y coches actualizados ({$total} equipos)");
     }
 
     private function escalarPrecio(int $posicion, int $total, int $minM = 10, int $maxM = 80): int

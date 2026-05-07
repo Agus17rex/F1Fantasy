@@ -2,14 +2,14 @@
 
 namespace Database\Seeders;
 
-use App\Models\DirectorEquipo;
+use App\Models\Coche;
 use App\Models\Escuderia;
 use App\Models\Piloto;
 use Illuminate\Database\Seeder;
 
 /**
- * Rellena los campos `foto` (pilotos / directores) y `logo` (escuderías)
- * con URLs oficiales de formula1.com / Wikipedia para el grid 2025.
+ * Rellena los campos `foto` (pilotos / coches) y `logo` (escuderías)
+ * con URLs oficiales de formula1.com para el grid 2026.
  */
 class MediaImagenesSeeder extends Seeder
 {
@@ -17,38 +17,36 @@ class MediaImagenesSeeder extends Seeder
     {
         $this->seedPilotos();
         $this->seedEscuderias();
-        $this->seedDirectores();
+        $this->seedCoches();
     }
 
     private function seedPilotos(): void
     {
-        $base = 'https://media.formula1.com/content/dam/fom-website/drivers';
 
+        $base = 'https://media.formula1.com/image/upload/c_lfill,w_520/q_auto/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/';
         $fotos = [
-            'albon'          => "$base/A/ALEALB01_Alexander_Albon/alealb01.png.transform/1col/image.png",
-            'alonso'         => "$base/F/FERALO01_Fernando_Alonso/feralo01.png.transform/1col/image.png",
-            'antonelli'      => "$base/A/ANDANT01_Andrea%20Kimi_Antonelli/andant01.png.transform/1col/image.png",
-            'bearman'        => "$base/O/OLIBEA01_Oliver_Bearman/olibea01.png.transform/1col/image.png",
-            'bortoleto'      => "$base/G/GABBOR01_Gabriel_Bortoleto/gabbor01.png.transform/1col/image.png",
-            'bottas'         => "$base/V/VALBOT01_Valtteri_Bottas/valbot01.png.transform/1col/image.png",
-            'colapinto'      => "$base/F/FRACOL01_Franco_Colapinto/fracol01.png.transform/1col/image.png",
-            'gasly'          => "$base/P/PIEGAS01_Pierre_Gasly/piegas01.png.transform/1col/image.png",
-            'hadjar'         => "$base/I/ISAHAD01_Isack_Hadjar/isahad01.png.transform/1col/image.png",
-            'hamilton'       => "$base/L/LEWHAM01_Lewis_Hamilton/lewham01.png.transform/1col/image.png",
-            'hulkenberg'     => "$base/N/NICHUL01_Nico_Hulkenberg/nichul01.png.transform/1col/image.png",
-            'lawson'         => "$base/L/LIALAW01_Liam_Lawson/lialaw01.png.transform/1col/image.png",
-            'leclerc'        => "$base/C/CHALEC01_Charles_Leclerc/chalec01.png.transform/1col/image.png",
-            'arvid_lindblad' => "$base/A/ARVLIN01_Arvid_Lindblad/arvlin01.png.transform/1col/image.png",
-            'norris'         => "$base/L/LANNOR01_Lando_Norris/lannor01.png.transform/1col/image.png",
-            'ocon'           => "$base/E/ESTOCO01_Esteban_Ocon/estoco01.png.transform/1col/image.png",
-            'perez'          => "$base/S/SERPER01_Sergio_Perez/serper01.png.transform/1col/image.png",
-            'piastri'        => "$base/O/OSCPIA01_Oscar_Piastri/oscpia01.png.transform/1col/image.png",
-            'russell'        => "$base/G/GEORUS01_George_Russell/georus01.png.transform/1col/image.png",
-            'sainz'          => "$base/C/CARSAI01_Carlos_Sainz/carsai01.png.transform/1col/image.png",
-            'stroll'         => "$base/L/LANSTR01_Lance_Stroll/lanstr01.png.transform/1col/image.png",
-            'max_verstappen' => "$base/M/MAXVER01_Max_Verstappen/maxver01.png.transform/1col/image.png",
-            'tsunoda'        => "$base/Y/YUKTSU01_Yuki_Tsunoda/yuktsu01.png.transform/1col/image.png",
-            'doohan'         => "$base/J/JACDOO01_Jack_Doohan/jacdoo01.png.transform/1col/image.png",
+            'albon'          => $base . "williams/alealb01/2026williamsalealb01right.webp",
+            'alonso'         => $base . "astonmartin/feralo01/2026astonmartinferalo01right.webp",
+            'antonelli'      => $base . "mercedes/andant01/2026mercedesandant01right.webp",
+            'bearman'        => $base . "haasf1team/olibea01/2026haasf1teamolibea01right.webp",
+            'bortoleto'      => $base . "audi/gabbor01/2026audigabbor01right.webp",
+            'bottas'         => $base . "cadillac/valbot01/2026cadillacvalbot01right.webp",
+            'colapinto'      => $base . "alpine/fracol01/2026alpinefracol01right.webp",
+            'gasly'          => $base . "alpine/piegas01/2026alpinepiegas01right.webp",
+            'hadjar'         => $base . "redbullracing/isahad01/2026redbullracingisahad01right.webp",
+            'hamilton'       => $base . "ferrari/lewham01/2026ferrarilewham01right.webp",
+            'hulkenberg'     => $base . "audi/nichul01/2026audinichul01right.webp",
+            'lawson'         => $base . "racingbulls/lialaw01/2026racingbullslialaw01right.webp",
+            'leclerc'        => $base . "ferrari/chalec01/2026ferrarichalec01right.webp",
+            'arvid_lindblad' => $base . "racingbulls/arvlin01/2026racingbullsarvlin01right.webp",
+            'norris'         => $base . "mclaren/lannor01/2026mclarenlannor01right.webp",
+            'ocon'           => $base . "haasf1team/estoco01/2026haasf1teamestoco01right.webp",
+            'perez'          => $base . "cadillac/serper01/2026cadillacserper01right.webp",
+            'piastri'        => $base . "mclaren/oscpia01/2026mclarenoscpia01right.webp",
+            'russell'        => $base . "mercedes/georus01/2026mercedesgeorus01right.webp",
+            'sainz'          => $base . "williams/carsai01/2026williamscarsai01right.webp",
+            'stroll'         => $base . "astonmartin/lanstr01/2026astonmartinlanstr01right.webp",
+            'max_verstappen' => $base . "redbullracing/maxver01/2026redbullracingmaxver01right.webp"
         ];
 
         foreach ($fotos as $apiId => $url) {
@@ -58,43 +56,53 @@ class MediaImagenesSeeder extends Seeder
 
     private function seedEscuderias(): void
     {
-        $logos = [
-            'alpine'       => 'https://media.formula1.com/content/dam/fom-website/teams/2025/alpine-logo.png',
-            'aston_martin' => 'https://media.formula1.com/content/dam/fom-website/teams/2025/aston-martin-logo.png',
-            'ferrari'      => 'https://media.formula1.com/content/dam/fom-website/teams/2025/ferrari-logo.png',
-            'haas'         => 'https://media.formula1.com/content/dam/fom-website/teams/2025/haas-logo.png',
-            'mclaren'      => 'https://media.formula1.com/content/dam/fom-website/teams/2025/mclaren-logo.png',
-            'mercedes'     => 'https://media.formula1.com/content/dam/fom-website/teams/2025/mercedes-logo.png',
-            'rb'           => 'https://media.formula1.com/content/dam/fom-website/teams/2025/racing-bulls-logo.png',
-            'red_bull'     => 'https://media.formula1.com/content/dam/fom-website/teams/2025/red-bull-racing-logo.png',
-            'sauber'       => 'https://media.formula1.com/content/dam/fom-website/teams/2025/kick-sauber-logo.png',
-            'williams'     => 'https://media.formula1.com/content/dam/fom-website/teams/2025/williams-logo.png',
-            'audi'         => 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Audi-Logo_2016.svg/240px-Audi-Logo_2016.svg.png',
-            'cadillac'     => 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Cadillac_logo.svg/240px-Cadillac_logo.svg.png',
+        $base = 'https://media.formula1.com/image/upload/c_lfill,w_520/q_auto/v1740000001/common/f1/2026/';
+
+        $datos = [
+            'alpine'       => ['logo' => $base . 'alpine/2026alpinelogo.webp',                 'color' => '#FF87BC'],
+            'aston_martin' => ['logo' => $base . 'astonmartin/2026astonmartinlogo.webp',       'color' => '#229971'],
+            'ferrari'      => ['logo' => $base . 'ferrari/2026ferrarilogo.webp',               'color' => '#E8002D'],
+            'haas'         => ['logo' => $base . 'haasf1team/2026haasf1teamlogo.webp',         'color' => '#B6BABD'],
+            'mclaren'      => ['logo' => $base . 'mclaren/2026mclarenlogo.webp',               'color' => '#FF8000'],
+            'mercedes'     => ['logo' => $base . 'mercedes/2026mercedeslogo.webp',             'color' => '#27F4D2'],
+            'rb'           => ['logo' => $base . 'racingbulls/2026racingbullslogo.webp',       'color' => '#6692FF'],
+            'red_bull'     => ['logo' => $base . 'redbullracing/2026redbullracinglogo.webp',   'color' => '#3671C6'],
+            'williams'     => ['logo' => $base . 'williams/2026williamslogo.webp',             'color' => '#64C4FF'],
+            'audi'         => ['logo' => $base . 'audi/2026audilogowhite.webp',                'color' => '#C0C0C0'],
+            'cadillac'     => ['logo' => $base . 'cadillac/2026cadillaclogowhite.webp',        'color' => '#C8A848'],
         ];
 
-        foreach ($logos as $apiId => $url) {
-            Escuderia::where('api_id', $apiId)->update(['logo' => $url]);
+        foreach ($datos as $apiId => $info) {
+            Escuderia::where('api_id', $apiId)->update(['logo' => $info['logo'], 'color' => $info['color']]);
         }
     }
 
-    private function seedDirectores(): void
+    private function seedCoches(): void
     {
+        // Foto del coche por escudería (api_id) — rellénalas tú.
+        // Si una URL queda vacía o falla, el frontend mostrará el icono 🏎️.
+
+        $base = "https://media.formula1.com/image/upload/c_lfill,w_512/q_auto/d_common:f1:2026:fallback:car:2026fallbackcarright.webp/v1740000001/common/f1/2026/";
         $fotos = [
-            'Christian Horner'   => 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Christian_Horner_2017_Malaysia_2.jpg/220px-Christian_Horner_2017_Malaysia_2.jpg',
-            'Frédéric Vasseur'   => 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Frederic_Vasseur_2018.jpg/220px-Frederic_Vasseur_2018.jpg',
-            'Toto Wolff'         => 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Toto_Wolff_2017_Malaysia_2.jpg/220px-Toto_Wolff_2017_Malaysia_2.jpg',
-            'Andrea Stella'      => 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Andrea_Stella_2023.jpg/220px-Andrea_Stella_2023.jpg',
-            'Andy Cowell'        => 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Andy_Cowell.jpg/220px-Andy_Cowell.jpg',
-            'Oliver Oakes'       => 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Oliver_Oakes.jpg/220px-Oliver_Oakes.jpg',
-            'James Vowles'       => 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/James_Vowles_2023.jpg/220px-James_Vowles_2023.jpg',
-            'Laurent Mekies'     => 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Laurent_Mekies_2019.jpg/220px-Laurent_Mekies_2019.jpg',
-            'Ayao Komatsu'       => 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Ayao_Komatsu_2024.jpg/220px-Ayao_Komatsu_2024.jpg',
-            'Mattia Binotto'     => 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Mattia_Binotto_2019.jpg/220px-Mattia_Binotto_2019.jpg',
+            'red_bull'     => $base . 'redbullracing/2026redbullracingcarright.webp',
+            'ferrari'      => $base . 'ferrari/2026ferraricarright.webp',
+            'mercedes'     => $base . 'mercedes/2026mercedescarright.webp',
+            'mclaren'      => $base . 'mclaren/2026mclarencarright.webp',
+            'aston_martin' => $base . 'astonmartin/2026astonmartincarright.webp',
+            'alpine'       => $base . 'alpine/2026alpinecarright.webp',
+            'williams'     => $base . 'williams/2026williamscarright.webp',
+            'rb'           => $base . 'racingbulls/2026racingbullscarright.webp',
+            'haas'         => $base . 'haasf1team/2026haasf1teamcarright.webp',
+            'audi'         => $base . 'audi/2026audicarright.webp',
+            'cadillac'     => $base . 'cadillac/2026cadillaccarright.webp',
         ];
 
-        foreach ($fotos as $nombre => $url) {
-            DirectorEquipo::where('nombre', $nombre)->update(['foto' => $url]);
+        foreach ($fotos as $apiId => $url) {
+            $escuderia = Escuderia::where('api_id', $apiId)->first();
+            if (!$escuderia) continue;
+
+            Coche::where('escuderia_id', $escuderia->id)
+                ->update(['foto' => $url ?: null]);
         }
     }
 }

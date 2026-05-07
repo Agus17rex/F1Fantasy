@@ -14,6 +14,7 @@ class ResultadoCarrera extends Model
         'posicion_salida', 'posicion_final', 'estado',
         'puntos_oficiales', 'vuelta_rapida', 'piloto_del_dia',
         'posicion_clasificacion', 'puntos_fantasy', 'puntos_calculados',
+        'puntos_carrera', 'puntos_velocidad',
     ];
 
     protected function casts(): array

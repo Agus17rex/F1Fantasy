@@ -78,8 +78,14 @@ async function handleSync() {
     const { data } = await adminService.sincronizarDatosF1(new Date().getFullYear())
     exito.value = `Sincronizados: ${data.pilotos} pilotos, ${data.escuderias} escuderías, ${data.carreras} carreras`
     await cargarPanel()
-  } catch {
-    errorMsg.value = 'Error al sincronizar. Comprueba la conexión con la API.'
+  } catch (e) {
+    if (e.code === 'ECONNABORTED') {
+      errorMsg.value = 'La sincronización ha tardado demasiado. Inténtalo de nuevo.'
+    } else if (e.response?.status === 403) {
+      errorMsg.value = 'No tienes permisos de administrador.'
+    } else {
+      errorMsg.value = e.response?.data?.message || `Error al sincronizar (${e.message})`
+    }
   } finally {
     sincronizando.value = false
   }
@@ -94,7 +100,7 @@ function claseBadge(estado) {
 }
 
 function etiquetaEstado(estado) {
-  return { upcoming: 'Próxima', active: 'En curso', scored: 'Puntuada' }[estado] || estado
+  return { upcoming: 'Próxima', active: 'Por puntuar', scored: 'Puntuada' }[estado] || estado
 }
 
 onMounted(cargarPanel)

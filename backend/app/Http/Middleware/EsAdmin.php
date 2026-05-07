@@ -10,7 +10,7 @@ class EsAdmin
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (!$request->user() || $request->user()->role !== 'admin') {
+        if (!$request->user() || !$request->user()->esAdmin()) {
             return response()->json([
                 'message' => 'Acceso denegado. Se requieren permisos de administrador.',
             ], 403);

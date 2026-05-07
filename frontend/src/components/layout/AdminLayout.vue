@@ -29,6 +29,11 @@
             ⚙️ Reglas Puntuación
           </button>
         </RouterLink>
+        <RouterLink to="/admin/resultados" custom v-slot="{ isActive, navigate }">
+          <button @click="navigate" :class="isActive ? 'nav-link-active' : 'nav-link'" class="w-full">
+            📋 Ver Puntuaciones
+          </button>
+        </RouterLink>
 
         <div class="pt-4">
           <RouterLink to="/" class="nav-link w-full flex">

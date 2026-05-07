@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\DirectorEquipo;
+use App\Models\Coche;
 use App\Models\Escuderia;
 use App\Models\Piloto;
 use App\Models\Carrera;
@@ -103,16 +103,16 @@ class ControladorF1 extends Controller
         return response()->json($carrera);
     }
 
-    // ─── Directores ───────────────────────────────────────────────────────────
+    // ─── Coches ───────────────────────────────────────────────────────────────
 
-    public function directores(): JsonResponse
+    public function coches(): JsonResponse
     {
-        $directores = DirectorEquipo::with('escuderia')
+        $coches = Coche::with('escuderia')
             ->where('activo', true)
             ->orderByDesc('precio')
             ->get();
 
-        return response()->json($directores);
+        return response()->json($coches);
     }
 
     // ─── Ranking Fantasy (puntos acumulados en la temporada) ──────────────────
@@ -136,40 +136,47 @@ class ControladorF1 extends Controller
             ->sortByDesc('total_fantasy_pts')
             ->values();
 
-        // ── Escuderías: suma de puntos_fantasy de sus pilotos ─────────────────
-        $escuderiasTotales = DB::table('resultados_carrera')
+        // ── Escuderías: ROUND(puntos_carrera / 2) por carrera, sumado ────────
+        $carreraPorCarreraYConstructor = DB::table('resultados_carrera')
             ->where('puntos_calculados', true)
-            ->selectRaw('escuderia_id, SUM(puntos_fantasy) as total_pts')
-            ->groupBy('escuderia_id')
-            ->pluck('total_pts', 'escuderia_id');
-
-        $escuderias = Escuderia::where('activa', true)
-            ->get()
-            ->map(fn($e) => array_merge($e->toArray(), [
-                'total_fantasy_pts' => (int) ($escuderiasTotales[$e->id] ?? 0),
-            ]))
-            ->sortByDesc('total_fantasy_pts')
-            ->values();
-
-        // ── Directores: ROUND(puntos_constructor_por_carrera / 2) sumados ─────
-        $ptsPorCarreraYConstructor = DB::table('resultados_carrera')
-            ->where('puntos_calculados', true)
-            ->selectRaw('escuderia_id, carrera_id, SUM(puntos_fantasy) as constructor_pts')
+            ->selectRaw('escuderia_id, carrera_id, SUM(puntos_carrera) as carrera_pts')
             ->groupBy('escuderia_id', 'carrera_id')
             ->get()
             ->groupBy('escuderia_id');
 
-        $directores = DirectorEquipo::with('escuderia')
-            ->where('activo', true)
+        $escuderias = Escuderia::where('activa', true)
             ->get()
-            ->map(function ($d) use ($ptsPorCarreraYConstructor) {
+            ->map(function ($e) use ($carreraPorCarreraYConstructor) {
                 $totalPts = 0;
-                if ($d->escuderia_id && isset($ptsPorCarreraYConstructor[$d->escuderia_id])) {
-                    foreach ($ptsPorCarreraYConstructor[$d->escuderia_id] as $fila) {
-                        $totalPts += (int) round($fila->constructor_pts / 2);
+                if (isset($carreraPorCarreraYConstructor[$e->id])) {
+                    foreach ($carreraPorCarreraYConstructor[$e->id] as $fila) {
+                        $totalPts += (int) round($fila->carrera_pts / 2);
                     }
                 }
-                return array_merge($d->toArray(), ['total_fantasy_pts' => $totalPts]);
+                return array_merge($e->toArray(), ['total_fantasy_pts' => $totalPts]);
+            })
+            ->sortByDesc('total_fantasy_pts')
+            ->values();
+
+        // ── Coches: ROUND(puntos_velocidad_constructor_por_carrera / 2) ──────
+        $velocidadPorCarreraYConstructor = DB::table('resultados_carrera')
+            ->where('puntos_calculados', true)
+            ->selectRaw('escuderia_id, carrera_id, SUM(puntos_velocidad) as velocidad_pts')
+            ->groupBy('escuderia_id', 'carrera_id')
+            ->get()
+            ->groupBy('escuderia_id');
+
+        $coches = Coche::with('escuderia')
+            ->where('activo', true)
+            ->get()
+            ->map(function ($c) use ($velocidadPorCarreraYConstructor) {
+                $totalPts = 0;
+                if ($c->escuderia_id && isset($velocidadPorCarreraYConstructor[$c->escuderia_id])) {
+                    foreach ($velocidadPorCarreraYConstructor[$c->escuderia_id] as $fila) {
+                        $totalPts += (int) round($fila->velocidad_pts / 2);
+                    }
+                }
+                return array_merge($c->toArray(), ['total_fantasy_pts' => $totalPts]);
             })
             ->sortByDesc('total_fantasy_pts')
             ->values();
@@ -177,7 +184,7 @@ class ControladorF1 extends Controller
         return response()->json([
             'pilotos'    => $pilotos,
             'escuderias' => $escuderias,
-            'directores' => $directores,
+            'coches'     => $coches,
         ]);
     }
 

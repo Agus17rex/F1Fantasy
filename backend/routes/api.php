@@ -24,7 +24,7 @@ Route::prefix('f1')->group(function () {
     Route::get('/carreras/{carrera}',       [ControladorF1::class, 'carrera']);
     Route::get('/clasificacion/pilotos',    [ControladorF1::class, 'clasificacionPilotos']);
     Route::get('/clasificacion/escuderias', [ControladorF1::class, 'clasificacionEscuderias']);
-    Route::get('/directores',               [ControladorF1::class, 'directores']);
+    Route::get('/coches',                   [ControladorF1::class, 'coches']);
     Route::get('/fantasy-ranking',          [ControladorF1::class, 'rankingFantasy']);
 });
 
@@ -51,18 +51,18 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/equipo/pilotos',            [ControladorEquipoFantasy::class, 'comprarPiloto']);
         Route::delete('/equipo/pilotos/{piloto}', [ControladorEquipoFantasy::class, 'venderPiloto']);
 
-        // Director
-        Route::post('/equipo/director',                     [ControladorEquipoFantasy::class, 'comprarDirector']);
-        Route::delete('/equipo/director/{director}',        [ControladorEquipoFantasy::class, 'venderDirector']);
+        // Coche
+        Route::post('/equipo/coche',           [ControladorEquipoFantasy::class, 'comprarCoche']);
+        Route::delete('/equipo/coche/{coche}', [ControladorEquipoFantasy::class, 'venderCoche']);
 
         // Escudería
-        Route::post('/equipo/escuderia',                    [ControladorEquipoFantasy::class, 'comprarEscuderia']);
-        Route::delete('/equipo/escuderia/{escuderia}',      [ControladorEquipoFantasy::class, 'venderEscuderia']);
+        Route::post('/equipo/escuderia',               [ControladorEquipoFantasy::class, 'comprarEscuderia']);
+        Route::delete('/equipo/escuderia/{escuderia}', [ControladorEquipoFantasy::class, 'venderEscuderia']);
 
         // Robar (transfer/steal)
         Route::post('/equipo/robar/pilotos',   [ControladorEquipoFantasy::class, 'robarPiloto']);
         Route::post('/equipo/robar/escuderia', [ControladorEquipoFantasy::class, 'robarEscuderia']);
-        Route::post('/equipo/robar/director',  [ControladorEquipoFantasy::class, 'robarDirector']);
+        Route::post('/equipo/robar/coche',     [ControladorEquipoFantasy::class, 'robarCoche']);
     });
 
     // ─── Admin ───────────────────────────────────────────────────────────────
@@ -72,6 +72,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/sincronizar',                    [ControladorAdminCarrera::class, 'sincronizarDatosF1']);
         Route::post('/carreras/{carrera}/sincronizar', [ControladorAdminCarrera::class, 'sincronizarResultados']);
         Route::post('/carreras/{carrera}/puntuar',     [ControladorAdminCarrera::class, 'puntuarCarrera']);
+        Route::get('/carreras/{carrera}/puntuacion',  [ControladorAdminCarrera::class, 'puntuacionCarrera']);
         Route::post('/precios',                        [ControladorAdminCarrera::class, 'actualizarPrecios']);
     });
 });

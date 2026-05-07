@@ -46,10 +46,10 @@ class EquipoFantasy extends Model
             ->wherePivotNull('fecha_baja');
     }
 
-    // Director activo del equipo
-    public function directores(): BelongsToMany
+    // Coche activo del equipo
+    public function coches(): BelongsToMany
     {
-        return $this->belongsToMany(DirectorEquipo::class, 'equipos_fantasy_directores', 'equipo_fantasy_id', 'director_id')
+        return $this->belongsToMany(Coche::class, 'equipos_fantasy_coches', 'equipo_fantasy_id', 'coche_id')
             ->withPivot('fecha_seleccion')
             ->wherePivotNull('fecha_baja');
     }
@@ -63,8 +63,8 @@ class EquipoFantasy extends Model
 
     public function esValido(): bool
     {
-        return $this->pilotos->count() === 3
-            && $this->directores->count() === 1
+        return $this->pilotos->count() === 2
+            && $this->coches->count() === 1
             && $this->escuderias->count() === 1;
     }
 }

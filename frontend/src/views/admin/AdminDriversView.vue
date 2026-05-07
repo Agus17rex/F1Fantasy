@@ -56,22 +56,23 @@
       </div>
     </div>
 
-    <!-- Directores -->
+    <!-- Coches -->
     <div class="card">
-      <h3 class="font-semibold text-white mb-4">Directores de equipo</h3>
+      <h3 class="font-semibold text-white mb-4">Coches</h3>
       <div v-if="cargando" class="text-zinc-400 text-sm py-4 text-center">Cargando...</div>
       <div v-else class="space-y-1.5">
         <div
-          v-for="director in directores"
-          :key="director.id"
+          v-for="coche in coches"
+          :key="coche.id"
           class="flex items-center gap-3 py-1.5 border-b border-zinc-800 last:border-0"
         >
+          <div class="w-3 h-8 rounded flex-shrink-0" :style="{ backgroundColor: coche.escuderia?.color || '#888' }"></div>
           <p class="flex-1 text-white text-sm font-medium">
-            {{ director.nombre }}
-            <span class="text-zinc-500 text-xs ml-2 font-normal">{{ director.escuderia?.nombre }}</span>
+            {{ coche.nombre }}
+            <span class="text-zinc-500 text-xs ml-2 font-normal">{{ coche.escuderia?.nombre }}</span>
           </p>
           <span class="text-red-400 font-mono text-sm font-semibold">
-            {{ formatearPrecio(director.precio) }}
+            {{ formatearPrecio(coche.precio) }}
           </span>
         </div>
       </div>
@@ -88,7 +89,7 @@ import api from '@/services/api'
 const f1Store      = useF1Store()
 const pilotos      = ref([])
 const escuderias   = ref([])
-const directores   = ref([])
+const coches       = ref([])
 const cargando     = ref(false)
 const recalculando = ref(false)
 const mensaje      = ref('')
@@ -106,8 +107,8 @@ async function cargarDatos() {
     pilotos.value    = [...f1Store.pilotos].sort((a, b) => b.precio - a.precio)
     escuderias.value = [...f1Store.escuderias].sort((a, b) => b.precio - a.precio)
 
-    const { data } = await api.get('/f1/directores')
-    directores.value = [...data].sort((a, b) => b.precio - a.precio)
+    const { data } = await api.get('/f1/coches')
+    coches.value = [...data].sort((a, b) => b.precio - a.precio)
   } finally {
     cargando.value = false
   }

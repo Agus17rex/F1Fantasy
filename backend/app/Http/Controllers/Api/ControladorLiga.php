@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\DirectorEquipo;
+use App\Models\Coche;
 use App\Models\Escuderia;
 use App\Models\EquipoFantasy;
 use App\Models\Liga;
@@ -120,7 +120,7 @@ class ControladorLiga extends Controller
     }
 
     /**
-     * Mercado: devuelve pilotos, escuderías y directores con flags de propiedad,
+     * Mercado: devuelve pilotos, escuderías y coches con flags de propiedad,
      * robo posible y protección de 7 días.
      */
     public function mercado(Request $request, Liga $liga): JsonResponse
@@ -129,12 +129,12 @@ class ControladorLiga extends Controller
 
         $equipo = EquipoFantasy::where('liga_id', $liga->id)
             ->where('usuario_id', $usuarioId)
-            ->with(['pilotos', 'escuderias', 'directores'])
+            ->with(['pilotos', 'escuderias', 'coches'])
             ->first();
 
         $pilotoIds    = $equipo?->pilotos->pluck('id')->all() ?? [];
         $escuderiaIds = $equipo?->escuderias->pluck('id')->all() ?? [];
-        $directorIds  = $equipo?->directores->pluck('id')->all() ?? [];
+        $cocheIds     = $equipo?->coches->pluck('id')->all() ?? [];
 
         $pilotosConRol = $equipo?->pilotos->mapWithKeys(fn($p) => [$p->id => $p->pivot->rol]) ?? collect();
 
@@ -169,20 +169,20 @@ class ControladorLiga extends Controller
             ->get()
             ->keyBy('escuderia_id');
 
-        $directoresAjenos = DB::table('equipos_fantasy_directores')
-            ->join('equipos_fantasy', 'equipos_fantasy.id', '=', 'equipos_fantasy_directores.equipo_fantasy_id')
+        $cochesAjenos = DB::table('equipos_fantasy_coches')
+            ->join('equipos_fantasy', 'equipos_fantasy.id', '=', 'equipos_fantasy_coches.equipo_fantasy_id')
             ->join('users', 'users.id', '=', 'equipos_fantasy.usuario_id')
             ->where('equipos_fantasy.liga_id', $liga->id)
             ->where('equipos_fantasy.usuario_id', '!=', $usuarioId)
-            ->whereNull('equipos_fantasy_directores.fecha_baja')
+            ->whereNull('equipos_fantasy_coches.fecha_baja')
             ->select(
-                'equipos_fantasy_directores.director_id',
-                'equipos_fantasy_directores.fecha_seleccion',
+                'equipos_fantasy_coches.coche_id',
+                'equipos_fantasy_coches.fecha_seleccion',
                 'users.id as propietario_id',
                 'users.nombre as propietario_nombre'
             )
             ->get()
-            ->keyBy('director_id');
+            ->keyBy('coche_id');
 
         $ahora = now();
 
@@ -247,12 +247,12 @@ class ControladorLiga extends Controller
                 ]);
             });
 
-        $directores = DirectorEquipo::with('escuderia')
+        $coches = Coche::with('escuderia')
             ->where('activo', true)
             ->orderBy('nombre')
             ->get()
-            ->map(function ($d) use ($directorIds, $directoresAjenos, $ahora) {
-                $ajeno = $directoresAjenos->get($d->id);
+            ->map(function ($c) use ($cocheIds, $cochesAjenos, $ahora) {
+                $ajeno = $cochesAjenos->get($c->id);
                 $enEquipoAjeno = $ajeno !== null;
                 $protegido     = false;
                 $diasProteccion = 0;
@@ -268,8 +268,8 @@ class ControladorLiga extends Controller
                     $propietario = ['id' => $ajeno->propietario_id, 'nombre' => $ajeno->propietario_nombre];
                 }
 
-                return array_merge($d->toArray(), [
-                    'en_equipo'       => in_array($d->id, $directorIds),
+                return array_merge($c->toArray(), [
+                    'en_equipo'       => in_array($c->id, $cocheIds),
                     'en_equipo_ajeno' => $enEquipoAjeno,
                     'propietario'     => $propietario,
                     'protegido'       => $protegido,
@@ -281,7 +281,7 @@ class ControladorLiga extends Controller
             'presupuesto_restante' => $equipo?->presupuesto_restante ?? $liga->presupuesto_inicial,
             'pilotos'              => $pilotos,
             'escuderias'           => $escuderias,
-            'directores'           => $directores,
+            'coches'               => $coches,
         ]);
     }
 

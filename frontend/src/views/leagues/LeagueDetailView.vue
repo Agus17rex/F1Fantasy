@@ -199,50 +199,50 @@
           <p v-if="escuderiasFiltradas.length === 0" class="text-zinc-500 text-center py-6">Sin resultados</p>
         </div>
 
-        <!-- Lista: Directores -->
-        <div v-if="categoriaActiva === 'directores'" class="space-y-1.5">
-          <div v-for="director in directoresFiltrados" :key="director.id"
+        <!-- Lista: Coches -->
+        <div v-if="categoriaActiva === 'coches'" class="space-y-1.5">
+          <div v-for="coche in cochesFiltrados" :key="coche.id"
             class="card !p-3 flex items-center gap-3"
           >
-            <AvatarDirector :director="director" size="md" />
+            <ImagenCoche :coche="coche" size="md" />
             <div class="flex-1 min-w-0">
-              <p class="text-white text-sm font-semibold">{{ director.nombre }}</p>
+              <p class="text-white text-sm font-semibold">{{ coche.nombre }}</p>
               <p class="text-zinc-500 text-xs flex items-center gap-1.5">
-                <LogoEscuderia :escuderia="director.escuderia" size="xs" />
-                {{ director.escuderia?.nombre || '—' }} · {{ director.nacionalidad }}
+                <LogoEscuderia :escuderia="coche.escuderia" size="xs" />
+                {{ coche.escuderia?.nombre || '—' }}
               </p>
             </div>
-            <p class="text-red-400 font-bold text-sm flex-shrink-0">{{ M(director.precio) }}</p>
+            <p class="text-red-400 font-bold text-sm flex-shrink-0">{{ M(coche.precio) }}</p>
             <div class="flex-shrink-0">
-              <template v-if="director.en_equipo">
-                <span class="text-xs text-green-400 mr-2">✓ Director</span>
-                <button @click="vender('director', director)"
+              <template v-if="coche.en_equipo">
+                <span class="text-xs text-green-400 mr-2">✓ Coche</span>
+                <button @click="vender('coche', coche)"
                   class="text-xs bg-zinc-800 hover:bg-red-600/20 hover:text-red-400 text-zinc-400 border border-zinc-700 hover:border-red-500/50 px-2 py-1 rounded transition-colors">
                   Vender
                 </button>
               </template>
-              <template v-else-if="director.en_equipo_ajeno">
+              <template v-else-if="coche.en_equipo_ajeno">
                 <div class="flex flex-col items-end gap-1">
-                  <span class="text-xs text-zinc-500">{{ director.propietario?.nombre }}</span>
-                  <span v-if="director.protegido"
+                  <span class="text-xs text-zinc-500">{{ coche.propietario?.nombre }}</span>
+                  <span v-if="coche.protegido"
                     class="text-xs bg-zinc-800 text-zinc-500 border border-zinc-700 px-2 py-1 rounded">
-                    🛡️ {{ director.dias_proteccion }}d
+                    🛡️ {{ coche.dias_proteccion }}d
                   </span>
-                  <button v-else @click="robar('director', director)"
-                    :disabled="!puedoComprar(director.precio)"
+                  <button v-else @click="robar('coche', coche)"
+                    :disabled="!puedoComprar(coche.precio)"
                     class="text-xs bg-orange-600 hover:bg-orange-500 disabled:bg-zinc-800 disabled:text-zinc-600 text-white px-3 py-1 rounded transition-colors">
                     🔄 Robar
                   </button>
                 </div>
               </template>
-              <button v-else @click="comprar('director', director)"
-                :disabled="!puedoComprar(director.precio)"
+              <button v-else @click="comprar('coche', coche)"
+                :disabled="!puedoComprar(coche.precio)"
                 class="text-xs bg-red-600 hover:bg-red-500 disabled:bg-zinc-800 disabled:text-zinc-600 text-white px-3 py-1 rounded transition-colors">
                 Comprar
               </button>
             </div>
           </div>
-          <p v-if="directoresFiltrados.length === 0" class="text-zinc-500 text-center py-6">Sin resultados</p>
+          <p v-if="cochesFiltrados.length === 0" class="text-zinc-500 text-center py-6">Sin resultados</p>
         </div>
       </template>
     </div>
@@ -258,35 +258,35 @@
             {{ equipo.es_valido ? '✓ Equipo válido — listo para puntuar' : '⚠ Equipo incompleto' }}
           </span>
           <p class="text-zinc-500 text-xs">
-            Completa: 3 pilotos · 1 director · 1 escudería
+            Completa: 2 pilotos · 1 escudería · 1 coche
           </p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
           <!-- Pilotos -->
-          <SlotEquipoCard titulo="🏁 Pilotos" subtitulo="todos puntúan" :max="3">
+          <SlotEquipoCard titulo="🏁 Pilotos" subtitulo="puntúan completos" :max="2">
             <FilaPiloto v-for="p in pilotos" :key="p.id" :piloto="p"
               @vender="venderDesdeEquipo('piloto', p)" />
-            <SlotVacio v-for="n in (3 - pilotos.length)" :key="'p'+n" />
+            <SlotVacio v-for="n in (2 - pilotos.length)" :key="'p'+n" />
           </SlotEquipoCard>
 
-          <!-- Director -->
-          <SlotEquipoCard titulo="🎩 Director" subtitulo="puntos del equipo ÷ 2" :max="1">
-            <div v-for="d in directores" :key="d.id"
+          <!-- Coche -->
+          <SlotEquipoCard titulo="🏎️ Coche" subtitulo="velocidad pura ÷ 2" :max="1">
+            <div v-for="c in coches" :key="c.id"
               class="flex items-center gap-2 p-2 rounded-lg bg-zinc-800/50">
-              <AvatarDirector :director="d" size="sm" />
+              <ImagenCoche :coche="c" size="sm" />
               <div class="flex-1 min-w-0">
-                <p class="text-white text-sm font-medium truncate">{{ d.nombre }}</p>
-                <p class="text-zinc-500 text-xs">{{ d.escuderia?.nombre }} · {{ M(d.precio) }}</p>
+                <p class="text-white text-sm font-medium truncate">{{ c.nombre }}</p>
+                <p class="text-zinc-500 text-xs">{{ c.escuderia?.nombre }} · {{ M(c.precio) }}</p>
               </div>
-              <button @click="venderDesdeEquipo('director', d)"
+              <button @click="venderDesdeEquipo('coche', c)"
                 class="text-zinc-600 hover:text-red-400 text-xs px-1 transition-colors">✕</button>
             </div>
-            <SlotVacio v-if="directores.length === 0" />
+            <SlotVacio v-if="coches.length === 0" />
           </SlotEquipoCard>
 
           <!-- Escudería -->
-          <SlotEquipoCard titulo="🏎️ Escudería" subtitulo="suma puntos de sus 2 pilotos" :max="1">
+          <SlotEquipoCard titulo="🏆 Escudería" subtitulo="resultado en carrera ÷ 2" :max="1">
             <div v-for="e in escuderias" :key="e.id"
               class="flex items-center gap-2 p-2 rounded-lg bg-zinc-800/50">
               <LogoEscuderia :escuderia="e" size="sm" />
@@ -382,21 +382,21 @@
             </div>
             <p v-if="!p.desglose.escuderias.length" class="text-zinc-700 text-sm">—</p>
 
-            <!-- Director -->
-            <p class="text-zinc-600 text-xs font-semibold uppercase tracking-wider mt-3 mb-2">Director</p>
-            <div v-for="dir in p.desglose.directores" :key="dir.id"
+            <!-- Coche -->
+            <p class="text-zinc-600 text-xs font-semibold uppercase tracking-wider mt-3 mb-2">Coche</p>
+            <div v-for="coche in p.desglose.coches" :key="coche.id"
               class="flex items-center gap-2 py-1">
-              <span class="text-base flex-shrink-0">🎩</span>
+              <span class="text-base flex-shrink-0">🏎️</span>
               <div class="flex-1 min-w-0">
-                <span class="text-zinc-300 text-sm">{{ dir.nombre }}</span>
-                <span v-if="dir.escuderia" class="text-zinc-600 text-xs ml-1">· {{ dir.escuderia }}</span>
+                <span class="text-zinc-300 text-sm">{{ coche.nombre }}</span>
+                <span v-if="coche.escuderia" class="text-zinc-600 text-xs ml-1">· {{ coche.escuderia }}</span>
               </div>
               <span class="font-bold text-sm tabular-nums"
-                :class="dir.total > 0 ? 'text-green-400' : dir.total < 0 ? 'text-red-400' : 'text-zinc-600'">
-                {{ dir.total > 0 ? '+' : '' }}{{ dir.total }}
+                :class="coche.total > 0 ? 'text-green-400' : coche.total < 0 ? 'text-red-400' : 'text-zinc-600'">
+                {{ coche.total > 0 ? '+' : '' }}{{ coche.total }}
               </span>
             </div>
-            <p v-if="!p.desglose.directores.length" class="text-zinc-700 text-sm">—</p>
+            <p v-if="!p.desglose.coches.length" class="text-zinc-700 text-sm">—</p>
           </div>
         </div>
       </template>
@@ -449,25 +449,25 @@
               </div>
             </div>
 
-            <!-- Director -->
+            <!-- Coche -->
             <div class="mb-3">
-              <p class="text-zinc-500 text-xs font-semibold uppercase tracking-wider mb-2">🎩 Director</p>
+              <p class="text-zinc-500 text-xs font-semibold uppercase tracking-wider mb-2">🏎️ Coche</p>
               <div class="space-y-1.5">
-                <div v-for="d in (equipoAjeno.directores || [])" :key="d.id"
+                <div v-for="c in (equipoAjeno.coches || [])" :key="c.id"
                   class="flex items-center gap-2 p-2 rounded-lg bg-zinc-800/50">
-                  <AvatarDirector :director="d" size="sm" />
+                  <ImagenCoche :coche="c" size="sm" />
                   <div class="flex-1 min-w-0">
-                    <p class="text-white text-sm font-medium">{{ d.nombre }}</p>
-                    <p class="text-zinc-500 text-xs">{{ d.escuderia?.nombre }}</p>
+                    <p class="text-white text-sm font-medium">{{ c.nombre }}</p>
+                    <p class="text-zinc-500 text-xs">{{ c.escuderia?.nombre }}</p>
                   </div>
-                  <span class="text-red-400 text-xs font-mono font-semibold">{{ M(d.precio) }}</span>
-                  <span v-if="d.pivot?.fecha_seleccion && diasProteccionRestantes(d.pivot.fecha_seleccion) > 0"
+                  <span class="text-red-400 text-xs font-mono font-semibold">{{ M(c.precio) }}</span>
+                  <span v-if="c.pivot?.fecha_seleccion && diasProteccionRestantes(c.pivot.fecha_seleccion) > 0"
                     class="text-xs bg-zinc-700 text-zinc-400 px-1.5 py-0.5 rounded">
-                    🛡️ {{ diasProteccionRestantes(d.pivot.fecha_seleccion) }}d
+                    🛡️ {{ diasProteccionRestantes(c.pivot.fecha_seleccion) }}d
                   </span>
                 </div>
-                <p v-if="!equipoAjeno.directores?.length"
-                  class="text-zinc-700 text-sm text-center py-1">Sin director</p>
+                <p v-if="!equipoAjeno.coches?.length"
+                  class="text-zinc-700 text-sm text-center py-1">Sin coche</p>
               </div>
             </div>
 
@@ -509,7 +509,7 @@ import { useAuthStore } from '@/stores/auth'
 import { ligaService, equipoService } from '@/services/leagueService'
 import AvatarPiloto    from '@/components/media/AvatarPiloto.vue'
 import LogoEscuderia   from '@/components/media/LogoEscuderia.vue'
-import AvatarDirector  from '@/components/media/AvatarDirector.vue'
+import ImagenCoche     from '@/components/media/ImagenCoche.vue'
 
 const route     = useRoute()
 const authStore = useAuthStore()
@@ -519,7 +519,7 @@ const ligaId    = route.params.id
 const liga             = ref(null)
 const clasificacion    = ref([])
 const equipo           = ref(null)
-const mercado          = ref({ pilotos: [], escuderias: [], directores: [] })
+const mercado          = ref({ pilotos: [], escuderias: [], coches: [] })
 const presupuestoRestante = ref(null)
 const puntuaciones     = ref([])
 const carreraAbierta   = ref(null)
@@ -550,12 +550,12 @@ const TABS = [
 const CATEGORIAS = [
   { id: 'pilotos',    label: 'Pilotos' },
   { id: 'escuderias', label: 'Escuderías' },
-  { id: 'directores', label: 'Directores' },
+  { id: 'coches',     label: 'Coches' },
 ]
 
 // ─── Datos del equipo ────────────────────────────────────────────────────────
 const pilotos    = computed(() => equipo.value?.pilotos    || [])
-const directores = computed(() => equipo.value?.directores || [])
+const coches     = computed(() => equipo.value?.coches     || [])
 const escuderias = computed(() => equipo.value?.escuderias || [])
 
 // ─── Filtros del mercado ──────────────────────────────────────────────────────
@@ -576,12 +576,12 @@ const escuderiasFiltradas = computed(() => {
   )
 })
 
-const directoresFiltrados = computed(() => {
+const cochesFiltrados = computed(() => {
   const q = busqueda.value.toLowerCase()
-  return (mercado.value.directores || []).filter(d =>
+  return (mercado.value.coches || []).filter(c =>
     !q ||
-    d.nombre?.toLowerCase().includes(q) ||
-    d.escuderia?.nombre?.toLowerCase().includes(q)
+    c.nombre?.toLowerCase().includes(q) ||
+    c.escuderia?.nombre?.toLowerCase().includes(q)
   )
 })
 
@@ -683,7 +683,7 @@ async function comprar(tipo, item) {
   try {
     let res
     if (tipo === 'escuderia') res = await equipoService.comprarEscuderia(ligaId, item.id)
-    if (tipo === 'director')  res = await equipoService.comprarDirector(ligaId, item.id)
+    if (tipo === 'coche')     res = await equipoService.comprarCoche(ligaId, item.id)
     mostrarToast(res.data.message)
     await recargarTodo()
   } catch (e) {
@@ -697,7 +697,7 @@ async function robar(tipo, item) {
     let res
     if (tipo === 'piloto')    res = await equipoService.robarPiloto(ligaId, item.id)
     if (tipo === 'escuderia') res = await equipoService.robarEscuderia(ligaId, item.id)
-    if (tipo === 'director')  res = await equipoService.robarDirector(ligaId, item.id)
+    if (tipo === 'coche')     res = await equipoService.robarCoche(ligaId, item.id)
     mostrarToast(res.data.message)
     await recargarTodo()
   } catch (e) {
@@ -711,7 +711,7 @@ async function vender(tipo, item) {
     let res
     if (tipo === 'piloto')    res = await equipoService.venderPiloto(ligaId, item.id)
     if (tipo === 'escuderia') res = await equipoService.venderEscuderia(ligaId, item.id)
-    if (tipo === 'director')  res = await equipoService.venderDirector(ligaId, item.id)
+    if (tipo === 'coche')     res = await equipoService.venderCoche(ligaId, item.id)
     mostrarToast(res.data.message)
     await recargarTodo()
   } catch (e) {

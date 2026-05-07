@@ -50,6 +50,11 @@ const routes = [
         component: () => import('@/views/race/ConstructorsView.vue'),
       },
       {
+        path: 'coches',
+        name: 'Coches',
+        component: () => import('@/views/race/CochesView.vue'),
+      },
+      {
         path: 'ranking-fantasy',
         name: 'RankingFantasy',
         component: () => import('@/views/race/FantasyRankingView.vue'),
@@ -99,6 +104,11 @@ const routes = [
         path: 'puntuacion',
         name: 'AdminPuntuacion',
         component: () => import('@/views/admin/AdminScoringView.vue'),
+      },
+      {
+        path: 'resultados',
+        name: 'AdminResultados',
+        component: () => import('@/views/admin/AdminResultadosView.vue'),
       },
     ],
   },

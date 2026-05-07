@@ -22,49 +22,60 @@ class ServicioPuntuacion
     }
 
     /**
-     * Calcula los puntos fantasy de un piloto en una carrera
+     * Calcula los puntos fantasy de un piloto en una carrera, separando:
+     *  - puntos_carrera   → posición final + penalizaciones (DNF, DNS, descalif.)
+     *  - puntos_velocidad → posición de clasificación + vuelta rápida + piloto del día
+     *  - puntos_fantasy   = puntos_carrera + puntos_velocidad (total individual)
      */
     public function calcularPuntosPiloto(ResultadoCarrera $resultado): int
     {
-        $puntos = 0;
+        $puntosCarrera   = 0;
+        $puntosVelocidad = 0;
 
-        // Posición final en carrera
+        // ── Posición final de la carrera (puntos de carrera) ─────────────────
         $evLlegada = 'FINISH_P' . $resultado->posicion_final;
         if ($resultado->posicion_final && isset($this->reglas[$evLlegada])) {
-            $puntos += $this->reglas[$evLlegada]->puntos;
+            $puntosCarrera += $this->reglas[$evLlegada]->puntos;
         }
 
-        // Posición en clasificación
-        $evQuali = 'QUALI_P' . $resultado->posicion_clasificacion;
-        if ($resultado->posicion_clasificacion && isset($this->reglas[$evQuali])) {
-            $puntos += $this->reglas[$evQuali]->puntos;
-        }
-
-        // Vuelta rápida
-        if ($resultado->vuelta_rapida && isset($this->reglas['FASTEST_LAP'])) {
-            $puntos += $this->reglas['FASTEST_LAP']->puntos;
-        }
-
-        // Piloto del día
-        if ($resultado->piloto_del_dia && isset($this->reglas['DRIVER_OF_DAY'])) {
-            $puntos += $this->reglas['DRIVER_OF_DAY']->puntos;
-        }
-
-        // Penalizaciones
+        // ── Penalizaciones (cuentan como puntos de carrera) ──────────────────
         if (in_array($resultado->estado, Traducciones::STATUS_ABANDONO, true)
             && isset($this->reglas['DNF'])) {
-            $puntos += $this->reglas['DNF']->puntos;
+            $puntosCarrera += $this->reglas['DNF']->puntos;
         }
         if ($resultado->estado === 'No salió' && isset($this->reglas['DNS'])) {
-            $puntos += $this->reglas['DNS']->puntos;
+            $puntosCarrera += $this->reglas['DNS']->puntos;
         }
         if ($resultado->estado === 'Descalificado' && isset($this->reglas['DISQUALIFIED'])) {
-            $puntos += $this->reglas['DISQUALIFIED']->puntos;
+            $puntosCarrera += $this->reglas['DISQUALIFIED']->puntos;
         }
 
-        $resultado->update(['puntos_fantasy' => $puntos, 'puntos_calculados' => true]);
+        // ── Posición de clasificación (puntos de velocidad) ──────────────────
+        $evQuali = 'QUALI_P' . $resultado->posicion_clasificacion;
+        if ($resultado->posicion_clasificacion && isset($this->reglas[$evQuali])) {
+            $puntosVelocidad += $this->reglas[$evQuali]->puntos;
+        }
 
-        return $puntos;
+        // ── Vuelta rápida (puntos de velocidad) ──────────────────────────────
+        if ($resultado->vuelta_rapida && isset($this->reglas['FASTEST_LAP'])) {
+            $puntosVelocidad += $this->reglas['FASTEST_LAP']->puntos;
+        }
+
+        // ── Piloto del día (puntos de velocidad) ─────────────────────────────
+        if ($resultado->piloto_del_dia && isset($this->reglas['DRIVER_OF_DAY'])) {
+            $puntosVelocidad += $this->reglas['DRIVER_OF_DAY']->puntos;
+        }
+
+        $total = $puntosCarrera + $puntosVelocidad;
+
+        $resultado->update([
+            'puntos_carrera'    => $puntosCarrera,
+            'puntos_velocidad'  => $puntosVelocidad,
+            'puntos_fantasy'    => $total,
+            'puntos_calculados' => true,
+        ]);
+
+        return $total;
     }
 
     /**
@@ -76,14 +87,14 @@ class ServicioPuntuacion
         $carrera->resultados->each(fn($r) => $this->calcularPuntosPiloto($r));
 
         // 2. Calcular puntos de cada equipo fantasy
-        $equipos = EquipoFantasy::with(['pilotos', 'escuderias', 'directores', 'miembroLiga'])->get();
+        $equipos = EquipoFantasy::with(['pilotos', 'escuderias', 'coches', 'miembroLiga'])->get();
 
         DB::transaction(function () use ($carrera, $equipos) {
             foreach ($equipos as $equipo) {
                 $this->calcularPuntosEquipo($equipo, $carrera);
             }
 
-            // 3. Distribuir bonus de presupuesto por liga (catch-up mechanic)
+            // 3. Distribuir bonus de presupuesto por liga (catch-up)
             $equipos->groupBy('liga_id')->each(function (Collection $grupoLiga) {
                 $this->distribuirPresupuestoLiga($grupoLiga);
             });
@@ -93,14 +104,18 @@ class ServicioPuntuacion
     }
 
     /**
-     * Calcula los puntos de un equipo para una carrera
+     * Calcula los puntos de un equipo para una carrera con la nueva mecánica:
+     *
+     *   2 pilotos titulares  → cada uno aporta sus puntos_fantasy completos
+     *   1 escudería          → SUMA(puntos_carrera de sus 2 pilotos reales)   ÷ 2
+     *   1 coche              → SUMA(puntos_velocidad de sus 2 pilotos reales) ÷ 2
      */
     public function calcularPuntosEquipo(EquipoFantasy $equipo, Carrera $carrera): PuntosEquipoCarrera
     {
         $total    = 0;
-        $desglose = ['pilotos' => [], 'escuderias' => [], 'directores' => []];
+        $desglose = ['pilotos' => [], 'escuderias' => [], 'coches' => []];
 
-        // ── Pilotos del equipo ────────────────────────────────────────────────
+        // ── Pilotos del equipo (puntúan completos) ────────────────────────────
         foreach ($equipo->pilotos as $piloto) {
             $resultado = ResultadoCarrera::where('carrera_id', $carrera->id)
                 ->where('piloto_id', $piloto->id)
@@ -111,26 +126,35 @@ class ServicioPuntuacion
             $total += $pts;
         }
 
-        // ── Escudería (suma de sus dos pilotos) ───────────────────────────────
+        // ── Escudería (resultado del domingo / 2) ────────────────────────────
         foreach ($equipo->escuderias as $escuderia) {
-            $pts = ResultadoCarrera::where('carrera_id', $carrera->id)
+            $sumaCarrera = ResultadoCarrera::where('carrera_id', $carrera->id)
                 ->where('escuderia_id', $escuderia->id)
-                ->sum('puntos_fantasy');
+                ->sum('puntos_carrera');
 
+            $pts = (int) round($sumaCarrera / 2);
             $desglose['escuderias'][$escuderia->id] = ['total' => $pts];
             $total += $pts;
         }
 
-        // ── Director (puntos = escudería / 2, redondeado) ────────────────────
-        foreach ($equipo->directores as $director) {
-            if (!$director->escuderia_id) continue;
+        // ── Coche (solo posición de clasificación / 2) ───────────────────────
+        foreach ($equipo->coches as $coche) {
+            if (!$coche->escuderia_id) continue;
 
-            $ptsEscuderia = ResultadoCarrera::where('carrera_id', $carrera->id)
-                ->where('escuderia_id', $director->escuderia_id)
-                ->sum('puntos_fantasy');
+            $resultadosEscuderia = ResultadoCarrera::where('carrera_id', $carrera->id)
+                ->where('escuderia_id', $coche->escuderia_id)
+                ->get();
 
-            $pts = (int) round($ptsEscuderia / 2);
-            $desglose['directores'][$director->id] = ['total' => $pts];
+            $sumaQuali = 0;
+            foreach ($resultadosEscuderia as $r) {
+                $evQuali = 'QUALI_P' . $r->posicion_clasificacion;
+                if ($r->posicion_clasificacion && isset($this->reglas[$evQuali])) {
+                    $sumaQuali += $this->reglas[$evQuali]->puntos;
+                }
+            }
+
+            $pts = (int) round($sumaQuali / 2);
+            $desglose['coches'][$coche->id] = ['total' => $pts];
             $total += $pts;
         }
 
@@ -156,7 +180,6 @@ class ServicioPuntuacion
     private function distribuirPresupuestoLiga(Collection $equipos): void
     {
         $total = $equipos->count();
-
         $ordenados = $equipos->sortBy('puntos_totales')->values();
 
         foreach ($ordenados as $posicionDesdeAbajo => $equipo) {

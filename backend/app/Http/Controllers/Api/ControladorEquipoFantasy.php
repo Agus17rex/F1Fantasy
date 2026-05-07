@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\DirectorEquipo;
+use App\Models\Coche;
 use App\Models\Escuderia;
 use App\Models\EquipoFantasy;
 use App\Models\Liga;
@@ -15,8 +15,8 @@ use Illuminate\Support\Facades\DB;
 
 class ControladorEquipoFantasy extends Controller
 {
-    private const MAX_PILOTOS   = 3;
-    private const MAX_DIRECTOR  = 1;
+    private const MAX_PILOTOS   = 2;
+    private const MAX_COCHE     = 1;
     private const MAX_ESCUDERIA = 1;
 
     // ─── Ver equipo ───────────────────────────────────────────────────────────
@@ -42,7 +42,7 @@ class ControladorEquipoFantasy extends Controller
 
         $equipo = EquipoFantasy::where('liga_id', $liga->id)
             ->where('usuario_id', $userId)
-            ->with(['pilotos.escuderia', 'escuderias', 'directores.escuderia', 'usuario'])
+            ->with(['pilotos.escuderia', 'escuderias', 'coches.escuderia', 'usuario'])
             ->firstOrFail();
 
         return response()->json([
@@ -65,20 +65,20 @@ class ControladorEquipoFantasy extends Controller
 
         $pilotoIds    = [];
         $escuderiaIds = [];
-        $directorIds  = [];
+        $cocheIds     = [];
 
         foreach ($registros as $reg) {
             $b = $reg->desglose ?? [];
             $pilotoIds    = array_merge($pilotoIds,    array_keys($b['pilotos']    ?? []));
             $escuderiaIds = array_merge($escuderiaIds, array_keys($b['escuderias'] ?? []));
-            $directorIds  = array_merge($directorIds,  array_keys($b['directores'] ?? []));
+            $cocheIds     = array_merge($cocheIds,     array_keys($b['coches']     ?? []));
         }
 
         $pilotos    = Piloto::whereIn('id', array_unique($pilotoIds))->with('escuderia')->get()->keyBy('id');
         $escuderias = Escuderia::whereIn('id', array_unique($escuderiaIds))->get()->keyBy('id');
-        $directores = DirectorEquipo::whereIn('id', array_unique($directorIds))->with('escuderia')->get()->keyBy('id');
+        $coches     = Coche::whereIn('id', array_unique($cocheIds))->with('escuderia')->get()->keyBy('id');
 
-        $puntuaciones = $registros->map(function ($reg) use ($pilotos, $escuderias, $directores) {
+        $puntuaciones = $registros->map(function ($reg) use ($pilotos, $escuderias, $coches) {
             $b = $reg->desglose ?? [];
 
             $desglosePilotos = collect($b['pilotos'] ?? [])->map(function ($datos, $id) use ($pilotos) {
@@ -101,12 +101,13 @@ class ControladorEquipoFantasy extends Controller
                 ];
             })->values();
 
-            $desgloseDirectores = collect($b['directores'] ?? [])->map(function ($datos, $id) use ($directores) {
-                $d = $directores[(int) $id] ?? null;
+            $desgloseCoches = collect($b['coches'] ?? [])->map(function ($datos, $id) use ($coches) {
+                $c = $coches[(int) $id] ?? null;
                 return [
                     'id'        => (int) $id,
-                    'nombre'    => $d?->nombre ?? "Director #{$id}",
-                    'escuderia' => $d?->escuderia?->nombre,
+                    'nombre'    => $c?->nombre ?? "Coche #{$id}",
+                    'escuderia' => $c?->escuderia?->nombre,
+                    'color'     => $c?->escuderia?->color,
                     'total'     => $datos['total'],
                 ];
             })->values();
@@ -119,7 +120,7 @@ class ControladorEquipoFantasy extends Controller
                 'desglose'       => [
                     'pilotos'    => $desglosePilotos,
                     'escuderias' => $desgloseEscuderias,
-                    'directores' => $desgloseDirectores,
+                    'coches'     => $desgloseCoches,
                 ],
             ];
         });
@@ -170,41 +171,41 @@ class ControladorEquipoFantasy extends Controller
         return response()->json(['message' => "{$piloto->nombre_completo} vendido — {$this->M($piloto->precio)} devueltos"]);
     }
 
-    // ─── Director ─────────────────────────────────────────────────────────────
+    // ─── Coche ────────────────────────────────────────────────────────────────
 
-    public function comprarDirector(Request $request, Liga $liga): JsonResponse
+    public function comprarCoche(Request $request, Liga $liga): JsonResponse
     {
-        $request->validate(['director_id' => ['required', 'exists:directores_equipo,id']]);
+        $request->validate(['coche_id' => ['required', 'exists:coches_equipo,id']]);
 
-        $equipo   = $this->miEquipo($request, $liga);
-        $director = DirectorEquipo::findOrFail($request->director_id);
+        $equipo = $this->miEquipo($request, $liga);
+        $coche  = Coche::findOrFail($request->coche_id);
 
-        if ($equipo->directores->count() >= self::MAX_DIRECTOR) {
-            return response()->json(['message' => 'Ya tienes un director. Véndelo primero'], 422);
+        if ($equipo->coches->count() >= self::MAX_COCHE) {
+            return response()->json(['message' => 'Ya tienes un coche. Véndelo primero'], 422);
         }
 
-        if ($director->precio > $equipo->presupuesto_restante) {
-            return response()->json(['message' => "Sin presupuesto. Necesitas {$this->M($director->precio)}, tienes {$this->M($equipo->presupuesto_restante)}"], 422);
+        if ($coche->precio > $equipo->presupuesto_restante) {
+            return response()->json(['message' => "Sin presupuesto. Necesitas {$this->M($coche->precio)}, tienes {$this->M($equipo->presupuesto_restante)}"], 422);
         }
 
-        $equipo->directores()->attach($director->id, ['fecha_seleccion' => now()]);
-        $equipo->decrement('presupuesto_restante', $director->precio);
+        $equipo->coches()->attach($coche->id, ['fecha_seleccion' => now()]);
+        $equipo->decrement('presupuesto_restante', $coche->precio);
 
-        return response()->json(['message' => "{$director->nombre} comprado como director"]);
+        return response()->json(['message' => "{$coche->nombre} añadido al equipo"]);
     }
 
-    public function venderDirector(Request $request, Liga $liga, DirectorEquipo $director): JsonResponse
+    public function venderCoche(Request $request, Liga $liga, Coche $coche): JsonResponse
     {
         $equipo = $this->miEquipo($request, $liga);
 
-        if (!$equipo->directores->contains($director->id)) {
-            return response()->json(['message' => 'Este director no está en tu equipo'], 422);
+        if (!$equipo->coches->contains($coche->id)) {
+            return response()->json(['message' => 'Este coche no está en tu equipo'], 422);
         }
 
-        $equipo->directores()->updateExistingPivot($director->id, ['fecha_baja' => now()]);
-        $equipo->increment('presupuesto_restante', $director->precio);
+        $equipo->coches()->updateExistingPivot($coche->id, ['fecha_baja' => now()]);
+        $equipo->increment('presupuesto_restante', $coche->precio);
 
-        return response()->json(['message' => "{$director->nombre} vendido — {$this->M($director->precio)} devueltos"]);
+        return response()->json(['message' => "{$coche->nombre} vendido — {$this->M($coche->precio)} devueltos"]);
     }
 
     // ─── Escudería ────────────────────────────────────────────────────────────
@@ -374,60 +375,60 @@ class ControladorEquipoFantasy extends Controller
         return response()->json(['message' => "{$escuderia->nombre} robada"]);
     }
 
-    public function robarDirector(Request $request, Liga $liga): JsonResponse
+    public function robarCoche(Request $request, Liga $liga): JsonResponse
     {
-        $request->validate(['director_id' => ['required', 'exists:directores_equipo,id']]);
+        $request->validate(['coche_id' => ['required', 'exists:coches_equipo,id']]);
 
         $equipoComprador = $this->miEquipo($request, $liga);
-        $director        = DirectorEquipo::findOrFail($request->director_id);
+        $coche           = Coche::findOrFail($request->coche_id);
 
-        if ($equipoComprador->directores->contains($director->id)) {
-            return response()->json(['message' => 'Este director ya está en tu equipo'], 422);
+        if ($equipoComprador->coches->contains($coche->id)) {
+            return response()->json(['message' => 'Este coche ya está en tu equipo'], 422);
         }
 
-        $pivotPropietario = DB::table('equipos_fantasy_directores')
-            ->join('equipos_fantasy', 'equipos_fantasy.id', '=', 'equipos_fantasy_directores.equipo_fantasy_id')
+        $pivotPropietario = DB::table('equipos_fantasy_coches')
+            ->join('equipos_fantasy', 'equipos_fantasy.id', '=', 'equipos_fantasy_coches.equipo_fantasy_id')
             ->where('equipos_fantasy.liga_id', $liga->id)
-            ->where('equipos_fantasy_directores.director_id', $director->id)
-            ->whereNull('equipos_fantasy_directores.fecha_baja')
-            ->where('equipos_fantasy_directores.equipo_fantasy_id', '!=', $equipoComprador->id)
-            ->select('equipos_fantasy_directores.*', 'equipos_fantasy.usuario_id as propietario_usuario_id')
+            ->where('equipos_fantasy_coches.coche_id', $coche->id)
+            ->whereNull('equipos_fantasy_coches.fecha_baja')
+            ->where('equipos_fantasy_coches.equipo_fantasy_id', '!=', $equipoComprador->id)
+            ->select('equipos_fantasy_coches.*', 'equipos_fantasy.usuario_id as propietario_usuario_id')
             ->first();
 
         if (!$pivotPropietario) {
-            return response()->json(['message' => 'Este director no está en ningún equipo de esta liga'], 422);
+            return response()->json(['message' => 'Este coche no está en ningún equipo de esta liga'], 422);
         }
 
         if ($pivotPropietario->fecha_seleccion && now()->diffInDays($pivotPropietario->fecha_seleccion) < 7) {
             $diasRestantes = 7 - (int) now()->diffInDays($pivotPropietario->fecha_seleccion);
-            return response()->json(['message' => "Este director está protegido. Quedan {$diasRestantes} días de protección"], 422);
+            return response()->json(['message' => "Este coche está protegido. Quedan {$diasRestantes} días de protección"], 422);
         }
 
-        $precio = $director->precio;
+        $precio = $coche->precio;
 
         if ($precio > $equipoComprador->presupuesto_restante) {
             return response()->json(['message' => "Sin presupuesto. Necesitas {$this->M($precio)}, tienes {$this->M($equipoComprador->presupuesto_restante)}"], 422);
         }
 
-        if ($equipoComprador->directores->count() >= self::MAX_DIRECTOR) {
-            return response()->json(['message' => 'Ya tienes un director. Véndelo primero'], 422);
+        if ($equipoComprador->coches->count() >= self::MAX_COCHE) {
+            return response()->json(['message' => 'Ya tienes un coche. Véndelo primero'], 422);
         }
 
-        DB::transaction(function () use ($equipoComprador, $director, $pivotPropietario, $precio) {
-            DB::table('equipos_fantasy_directores')
+        DB::transaction(function () use ($equipoComprador, $coche, $pivotPropietario, $precio) {
+            DB::table('equipos_fantasy_coches')
                 ->where('equipo_fantasy_id', $pivotPropietario->equipo_fantasy_id)
-                ->where('director_id', $director->id)
+                ->where('coche_id', $coche->id)
                 ->whereNull('fecha_baja')
                 ->update(['fecha_baja' => now()]);
 
             EquipoFantasy::where('id', $pivotPropietario->equipo_fantasy_id)
                 ->increment('presupuesto_restante', $precio);
 
-            $equipoComprador->directores()->attach($director->id, ['fecha_seleccion' => now()]);
+            $equipoComprador->coches()->attach($coche->id, ['fecha_seleccion' => now()]);
             $equipoComprador->decrement('presupuesto_restante', $precio);
         });
 
-        return response()->json(['message' => "{$director->nombre} robado"]);
+        return response()->json(['message' => "{$coche->nombre} robado"]);
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
@@ -436,7 +437,7 @@ class ControladorEquipoFantasy extends Controller
     {
         return EquipoFantasy::where('liga_id', $liga->id)
             ->where('usuario_id', $request->user()->id)
-            ->with(['pilotos.escuderia', 'escuderias', 'directores.escuderia'])
+            ->with(['pilotos.escuderia', 'escuderias', 'coches.escuderia'])
             ->firstOrFail();
     }
 

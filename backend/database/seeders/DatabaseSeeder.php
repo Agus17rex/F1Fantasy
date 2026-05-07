@@ -11,14 +11,14 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Usuario administrador — updateOrCreate evita el error si ya existe
+        // Usuario administrador
         User::updateOrCreate(
             ['email' => 'admin@f1fantasy.local'],
             [
-                'name'     => 'Admin F1 Fantasy',
-                'username' => 'admin',
+                'nombre'   => 'Admin F1 Fantasy',
+                'usuario'  => 'admin',
                 'password' => Hash::make('admin1234'),
-                'role'     => 'admin',
+                'rol'      => 'admin',
             ]
         );
 
@@ -26,59 +26,65 @@ class DatabaseSeeder extends Seeder
         User::updateOrCreate(
             ['email' => 'usuario@f1fantasy.local'],
             [
-                'name'     => 'Usuario Prueba',
-                'username' => 'usuario',
+                'nombre'   => 'Usuario Prueba',
+                'usuario'  => 'usuario',
                 'password' => Hash::make('usuario1234'),
-                'role'     => 'user',
+                'rol'      => 'user',
             ]
         );
 
         // Reglas de puntuación fantasy
         $reglas = [
             // Posición final en carrera
-            ['event' => 'FINISH_P1',  'points' => 25,  'description' => '1ª posición en carrera'],
-            ['event' => 'FINISH_P2',  'points' => 18,  'description' => '2ª posición en carrera'],
-            ['event' => 'FINISH_P3',  'points' => 15,  'description' => '3ª posición en carrera'],
-            ['event' => 'FINISH_P4',  'points' => 12,  'description' => '4ª posición en carrera'],
-            ['event' => 'FINISH_P5',  'points' => 10,  'description' => '5ª posición en carrera'],
-            ['event' => 'FINISH_P6',  'points' => 8,   'description' => '6ª posición en carrera'],
-            ['event' => 'FINISH_P7',  'points' => 6,   'description' => '7ª posición en carrera'],
-            ['event' => 'FINISH_P8',  'points' => 4,   'description' => '8ª posición en carrera'],
-            ['event' => 'FINISH_P9',  'points' => 2,   'description' => '9ª posición en carrera'],
-            ['event' => 'FINISH_P10', 'points' => 1,   'description' => '10ª posición en carrera'],
+            ['evento' => 'FINISH_P1',  'puntos' => 25, 'descripcion' => '1ª posición en carrera'],
+            ['evento' => 'FINISH_P2',  'puntos' => 18, 'descripcion' => '2ª posición en carrera'],
+            ['evento' => 'FINISH_P3',  'puntos' => 15, 'descripcion' => '3ª posición en carrera'],
+            ['evento' => 'FINISH_P4',  'puntos' => 12, 'descripcion' => '4ª posición en carrera'],
+            ['evento' => 'FINISH_P5',  'puntos' => 10, 'descripcion' => '5ª posición en carrera'],
+            ['evento' => 'FINISH_P6',  'puntos' =>  8, 'descripcion' => '6ª posición en carrera'],
+            ['evento' => 'FINISH_P7',  'puntos' =>  6, 'descripcion' => '7ª posición en carrera'],
+            ['evento' => 'FINISH_P8',  'puntos' =>  4, 'descripcion' => '8ª posición en carrera'],
+            ['evento' => 'FINISH_P9',  'puntos' =>  2, 'descripcion' => '9ª posición en carrera'],
+            ['evento' => 'FINISH_P10', 'puntos' =>  1, 'descripcion' => '10ª posición en carrera'],
 
             // Posición en clasificación
-            ['event' => 'QUALI_P1',  'points' => 10, 'description' => 'Pole position'],
-            ['event' => 'QUALI_P2',  'points' => 9,  'description' => '2ª en clasificación'],
-            ['event' => 'QUALI_P3',  'points' => 8,  'description' => '3ª en clasificación'],
-            ['event' => 'QUALI_P4',  'points' => 7,  'description' => '4ª en clasificación'],
-            ['event' => 'QUALI_P5',  'points' => 6,  'description' => '5ª en clasificación'],
+            ['evento' => 'QUALI_P1', 'puntos' => 10, 'descripcion' => 'Pole position'],
+            ['evento' => 'QUALI_P2', 'puntos' =>  9, 'descripcion' => '2ª en clasificación'],
+            ['evento' => 'QUALI_P3', 'puntos' =>  8, 'descripcion' => '3ª en clasificación'],
+            ['evento' => 'QUALI_P4', 'puntos' =>  7, 'descripcion' => '4ª en clasificación'],
+            ['evento' => 'QUALI_P5', 'puntos' =>  6, 'descripcion' => '5ª en clasificación'],
 
             // Bonificaciones
-            ['event' => 'FASTEST_LAP',    'points' => 5,  'description' => 'Vuelta rápida'],
-            ['event' => 'DRIVER_OF_DAY',  'points' => 5,  'description' => 'Piloto del día'],
-            ['event' => 'OVERTAKES_3',    'points' => 3,  'description' => 'Supera a 3+ coches en carrera'],
-            ['event' => 'OVERTAKES_5',    'points' => 5,  'description' => 'Supera a 5+ coches en carrera'],
-            ['event' => 'BEATS_TEAMMATE', 'points' => 3,  'description' => 'Supera al compañero de equipo'],
+            ['evento' => 'FASTEST_LAP',    'puntos' => 5, 'descripcion' => 'Vuelta rápida'],
+            ['evento' => 'DRIVER_OF_DAY',  'puntos' => 5, 'descripcion' => 'Piloto del día'],
+            ['evento' => 'OVERTAKES_3',    'puntos' => 3, 'descripcion' => 'Supera a 3+ coches en carrera'],
+            ['evento' => 'OVERTAKES_5',    'puntos' => 5, 'descripcion' => 'Supera a 5+ coches en carrera'],
+            ['evento' => 'BEATS_TEAMMATE', 'puntos' => 3, 'descripcion' => 'Supera al compañero de equipo'],
 
             // Penalizaciones
-            ['event' => 'DNF',          'points' => -15, 'description' => 'No termina la carrera'],
-            ['event' => 'DNS',          'points' => -20, 'description' => 'No sale en carrera'],
-            ['event' => 'PENALTY_GRID', 'points' => -5,  'description' => 'Penalización de grid'],
-            ['event' => 'PENALTY_TIME', 'points' => -5,  'description' => 'Penalización de tiempo'],
-            ['event' => 'DISQUALIFIED', 'points' => -25, 'description' => 'Descalificado'],
+            ['evento' => 'DNF',          'puntos' => -15, 'descripcion' => 'No termina la carrera'],
+            ['evento' => 'DNS',          'puntos' => -20, 'descripcion' => 'No sale en carrera'],
+            ['evento' => 'PENALTY_GRID', 'puntos' =>  -5, 'descripcion' => 'Penalización de grid'],
+            ['evento' => 'PENALTY_TIME', 'puntos' =>  -5, 'descripcion' => 'Penalización de tiempo'],
+            ['evento' => 'DISQUALIFIED', 'puntos' => -25, 'descripcion' => 'Descalificado'],
         ];
 
         foreach ($reglas as $regla) {
             ReglaPuntuacion::updateOrCreate(
-                ['event' => $regla['event']],
+                ['evento' => $regla['evento']],
                 $regla
             );
         }
 
         $this->call([
             CircuitSeeder::class,
-            DirectoresSeeder::class,
         ]);
+
+        // ⚠️  CochesSeeder, EliminarSauberSeeder y MediaImagenesSeeder requieren
+        //     que las escuderías ya estén en BD (ejecutar sync desde el panel admin primero).
+        //     Lánzalos manualmente después de sincronizar:
+        //       php artisan db:seed --class=CochesSeeder
+        //       php artisan db:seed --class=EliminarSauberSeeder
+        //       php artisan db:seed --class=MediaImagenesSeeder
     }
 }

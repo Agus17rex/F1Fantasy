@@ -5,12 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class DirectorEquipo extends Model
+class Coche extends Model
 {
-    protected $table = 'directores_equipo';
+    protected $table = 'coches_equipo';
 
     protected $fillable = [
-        'nombre', 'nacionalidad', 'foto', 'escuderia_id', 'precio', 'activo',
+        'nombre', 'foto', 'escuderia_id', 'precio', 'activo',
     ];
 
     protected function casts(): array
