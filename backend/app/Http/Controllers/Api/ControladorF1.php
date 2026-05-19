@@ -7,6 +7,7 @@ use App\Models\Coche;
 use App\Models\Escuderia;
 use App\Models\Piloto;
 use App\Models\Carrera;
+use App\Models\ReglaPuntuacion;
 use App\Services\ServicioApiF1;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -101,6 +102,17 @@ class ControladorF1 extends Controller
             ->first();
 
         return response()->json($carrera);
+    }
+
+    // ─── Reglas de puntuación (público) ──────────────────────────────────────
+
+    public function reglas(): JsonResponse
+    {
+        $reglas = ReglaPuntuacion::where('activa', true)
+            ->orderBy('evento')
+            ->get(['evento', 'puntos', 'descripcion']);
+
+        return response()->json($reglas);
     }
 
     // ─── Coches ───────────────────────────────────────────────────────────────

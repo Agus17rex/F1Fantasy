@@ -52,17 +52,26 @@ body {
 
   /* Cards */
   .card {
-    @apply bg-zinc-900 border border-zinc-800 rounded-xl p-5;
+    @apply bg-zinc-900 rounded-xl p-5;
+    border: 1.5px solid rgba(255, 24, 1, 0.28);
+    box-shadow: 0 0 14px rgba(255, 24, 1, 0.06);
   }
 
   .card-dark {
-    @apply bg-zinc-950 border border-zinc-800 rounded-xl p-5;
+    @apply bg-zinc-950 rounded-xl p-5;
+    border: 1.5px solid rgba(255, 24, 1, 0.20);
+    box-shadow: 0 0 10px rgba(255, 24, 1, 0.04);
   }
 
   /* Inputs */
   .input {
-    @apply w-full bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500
-           rounded-lg px-4 py-2.5 focus:outline-none focus:border-red-500 transition-colors duration-200;
+    @apply w-full bg-zinc-800 text-white placeholder-zinc-500
+           rounded-lg px-4 py-2.5 focus:outline-none transition-colors duration-200;
+    border: 1.5px solid rgba(255, 24, 1, 0.20);
+  }
+  .input:focus {
+    border-color: rgba(255, 24, 1, 0.7);
+    box-shadow: 0 0 0 2px rgba(255, 24, 1, 0.12);
   }
 
   /* Badges de estado */
@@ -88,7 +97,8 @@ body {
 
   /* Tabla de clasificación */
   .standings-row {
-    @apply flex items-center gap-4 py-3 border-b border-zinc-800 last:border-0 hover:bg-zinc-800/50 transition-colors px-2 rounded;
+    @apply flex items-center gap-4 py-3 last:border-0 hover:bg-zinc-800/50 transition-colors px-2 rounded;
+    border-bottom: 1.5px solid rgba(255, 24, 1, 0.12);
   }
 
   /* Nav link */
@@ -98,7 +108,9 @@ body {
   }
 
   .nav-link-active {
-    @apply nav-link text-white bg-zinc-800;
+    @apply nav-link text-white;
+    background: rgba(255, 24, 1, 0.12);
+    border: 1.5px solid rgba(255, 24, 1, 0.30);
   }
 }
 
@@ -110,6 +122,24 @@ body {
 
 .animate-slide-up {
   animation: slide-up 0.3s ease forwards;
+}
+
+/* ─── Neon F1 red — reemplaza todos los bordes zinc por rojo neon ────────── */
+.border-zinc-800,
+.border-b-zinc-800,
+.border-t-zinc-800,
+.border-r-zinc-800,
+.border-l-zinc-800 {
+  border-color: rgba(255, 24, 1, 0.25) !important;
+  border-width: 1.5px !important;
+}
+.border-zinc-700 {
+  border-color: rgba(255, 24, 1, 0.20) !important;
+  border-width: 1.5px !important;
+}
+.divide-zinc-800 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(255, 24, 1, 0.15);
+  border-width: 1.5px;
 }
 
 /* ─── Scrollbar ──────────────────────────────────────────────────────────── */

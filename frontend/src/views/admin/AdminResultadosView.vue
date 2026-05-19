@@ -1,11 +1,29 @@
 <template>
   <div class="space-y-6">
-    <h2 class="text-xl font-bold text-white">Puntuaciones por Carrera</h2>
+    <div class="flex items-center justify-between flex-wrap gap-3">
+      <h2 class="text-xl font-bold text-white">Puntuaciones por Carrera</h2>
+      <button @click="recalcularTodo" :disabled="recalculando"
+        class="flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white text-sm font-medium transition-colors">
+        <svg v-if="recalculando" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+        </svg>
+        <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        {{ recalculando ? 'Recalculando...' : 'Recalcular todo' }}
+      </button>
+    </div>
+
+    <p class="text-zinc-500 text-xs -mt-2">
+      "Recalcular todo" aplica todas las reglas desde cero (incluye adelantamientos, superar compañero y penalizaciones manuales).
+    </p>
 
     <!-- Selector de carrera -->
-    <div class="card flex items-center gap-4">
+    <div class="card flex flex-col sm:flex-row sm:items-center gap-3">
       <label class="text-zinc-400 text-sm whitespace-nowrap">Seleccionar carrera:</label>
-      <select v-model="carreraSeleccionada" @change="cargarPuntuacion" class="flex-1 bg-zinc-800 text-white border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-red-500">
+      <select v-model="carreraSeleccionada" @change="cargarPuntuacion"
+        class="flex-1 bg-zinc-800 text-white border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-red-500">
         <option value="">— Elige una carrera —</option>
         <option v-for="c in carreras" :key="c.id" :value="c.id">
           R{{ c.ronda }} · {{ c.nombre }} ({{ formatearFecha(c.fecha) }})
@@ -26,8 +44,8 @@
             <thead class="bg-zinc-900 text-zinc-400 text-xs uppercase tracking-wider">
               <tr>
                 <th class="px-4 py-3 text-left">Escudería</th>
-                <th class="px-4 py-3 text-center">Suma puntos_carrera</th>
-                <th class="px-4 py-3 text-center">Suma qualy</th>
+                <th class="px-4 py-3 text-center">Suma pts carrera</th>
+                <th class="px-4 py-3 text-center">Suma pts qualy</th>
                 <th class="px-4 py-3 text-center">Pts escudería (÷2)</th>
                 <th class="px-4 py-3 text-center">Pts coche (÷2)</th>
               </tr>
@@ -58,29 +76,33 @@
               <tr>
                 <th class="px-4 py-3 text-left">Piloto</th>
                 <th class="px-4 py-3 text-left">Escudería</th>
-                <th class="px-4 py-3 text-center">Pos. carrera</th>
-                <th class="px-4 py-3 text-center">Pos. qualy</th>
+                <th class="px-4 py-3 text-center">Salida</th>
+                <th class="px-4 py-3 text-center">Llegada</th>
+                <th class="px-4 py-3 text-center">Qualy</th>
                 <th class="px-4 py-3 text-center">Estado</th>
                 <th class="px-4 py-3 text-center">VR</th>
                 <th class="px-4 py-3 text-center">PD</th>
                 <th class="px-4 py-3 text-center">Pts carrera</th>
-                <th class="px-4 py-3 text-center">Pts velocidad</th>
+                <th class="px-4 py-3 text-center">Pts vel.</th>
                 <th class="px-4 py-3 text-center">Total</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-800">
-              <tr v-for="r in datos.resultados" :key="r.piloto" class="hover:bg-zinc-800/40">
-                <td class="px-4 py-3 text-white font-medium">{{ r.piloto }}</td>
-                <td class="px-4 py-3 text-zinc-400">{{ r.escuderia }}</td>
-                <td class="px-4 py-3 text-center text-zinc-300">
-                  {{ r.posicion_final ?? '—' }}
-                </td>
-                <td class="px-4 py-3 text-center text-zinc-300">
-                  {{ r.posicion_clasificacion ?? '—' }}
-                </td>
+              <tr v-for="r in datos.resultados" :key="r.id" class="hover:bg-zinc-800/40">
+                <td class="px-4 py-3 text-white font-medium whitespace-nowrap">{{ r.piloto }}</td>
+                <td class="px-4 py-3 text-zinc-400 whitespace-nowrap">{{ r.escuderia }}</td>
+                <td class="px-4 py-3 text-center text-zinc-300">{{ r.posicion_salida ?? '—' }}</td>
+                <td class="px-4 py-3 text-center text-zinc-300">{{ r.posicion_final ?? '—' }}</td>
+                <td class="px-4 py-3 text-center text-zinc-300">{{ r.posicion_clasificacion ?? '—' }}</td>
                 <td class="px-4 py-3 text-center">
-                  <span v-if="r.estado && r.estado !== 'Terminó'" class="text-red-400 text-xs">{{ r.estado }}</span>
-                  <span v-else class="text-zinc-500 text-xs">OK</span>
+                  <span class="text-xs"
+                    :class="{
+                      'text-green-400': r.estado === 'Finalizó',
+                      'text-zinc-400':  r.estado === 'Doblado',
+                      'text-red-400':   r.estado && r.estado !== 'Finalizó' && r.estado !== 'Doblado'
+                    }">
+                    {{ r.estado || '—' }}
+                  </span>
                 </td>
                 <td class="px-4 py-3 text-center">
                   <span v-if="r.vuelta_rapida" class="text-purple-400">⚡</span>
@@ -120,10 +142,11 @@
 import { ref, onMounted } from 'vue'
 import { adminService } from '@/services/adminService'
 
-const carreras           = ref([])
+const carreras            = ref([])
 const carreraSeleccionada = ref('')
-const datos              = ref(null)
-const cargando           = ref(false)
+const datos               = ref(null)
+const cargando            = ref(false)
+const recalculando        = ref(false)
 
 async function cargarCarreras() {
   const { data } = await adminService.getCarreras()
@@ -141,6 +164,20 @@ async function cargarPuntuacion() {
     datos.value = null
   } finally {
     cargando.value = false
+  }
+}
+
+async function recalcularTodo() {
+  if (!confirm('¿Recalcular todos los puntos desde cero? Esto puede tardar unos segundos.')) return
+  recalculando.value = true
+  try {
+    await adminService.recalcularTodo()
+    alert('✓ Recálculo completado correctamente')
+    if (carreraSeleccionada.value) await cargarPuntuacion()
+  } catch (e) {
+    alert('Error al recalcular: ' + (e.response?.data?.message ?? e.message))
+  } finally {
+    recalculando.value = false
   }
 }
 

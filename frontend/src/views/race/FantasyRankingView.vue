@@ -7,7 +7,7 @@
         <h2 class="text-xl font-bold text-white">Ranking Fantasy</h2>
         <p class="text-zinc-500 text-sm mt-0.5">Puntos acumulados en la temporada</p>
       </div>
-      <input v-model="busqueda" type="text" class="input w-56" placeholder="Buscar..." />
+      <input v-model="busqueda" type="text" class="input w-full sm:w-56" placeholder="Buscar..." />
     </div>
 
     <div v-if="cargando" class="text-zinc-400 text-center py-16">Cargando ranking...</div>

@@ -147,6 +147,19 @@ class ControladorEquipoFantasy extends Controller
             return response()->json(['message' => "Ya tienes el máximo de pilotos (" . self::MAX_PILOTOS . ")"], 422);
         }
 
+        // Verificar que ningún otro equipo de la liga tiene este piloto activo
+        $enOtroEquipo = DB::table('equipos_fantasy_pilotos')
+            ->join('equipos_fantasy', 'equipos_fantasy.id', '=', 'equipos_fantasy_pilotos.equipo_fantasy_id')
+            ->where('equipos_fantasy.liga_id', $liga->id)
+            ->where('equipos_fantasy_pilotos.piloto_id', $piloto->id)
+            ->where('equipos_fantasy_pilotos.equipo_fantasy_id', '!=', $equipo->id)
+            ->whereNull('equipos_fantasy_pilotos.fecha_baja')
+            ->exists();
+
+        if ($enOtroEquipo) {
+            return response()->json(['message' => 'Este piloto ya está en otro equipo. Usa la opción Robar'], 422);
+        }
+
         if ($piloto->precio > $equipo->presupuesto_restante) {
             return response()->json(['message' => "Sin presupuesto. Necesitas {$this->M($piloto->precio)}, tienes {$this->M($equipo->presupuesto_restante)}"], 422);
         }
@@ -182,6 +195,19 @@ class ControladorEquipoFantasy extends Controller
 
         if ($equipo->coches->count() >= self::MAX_COCHE) {
             return response()->json(['message' => 'Ya tienes un coche. Véndelo primero'], 422);
+        }
+
+        // Verificar que ningún otro equipo de la liga tiene este coche activo
+        $enOtroEquipo = DB::table('equipos_fantasy_coches')
+            ->join('equipos_fantasy', 'equipos_fantasy.id', '=', 'equipos_fantasy_coches.equipo_fantasy_id')
+            ->where('equipos_fantasy.liga_id', $liga->id)
+            ->where('equipos_fantasy_coches.coche_id', $coche->id)
+            ->where('equipos_fantasy_coches.equipo_fantasy_id', '!=', $equipo->id)
+            ->whereNull('equipos_fantasy_coches.fecha_baja')
+            ->exists();
+
+        if ($enOtroEquipo) {
+            return response()->json(['message' => 'Este coche ya está en otro equipo. Usa la opción Robar'], 422);
         }
 
         if ($coche->precio > $equipo->presupuesto_restante) {
@@ -225,6 +251,23 @@ class ControladorEquipoFantasy extends Controller
             $equipo->escuderias()->updateExistingPivot($actual->id, ['fecha_baja' => now()]);
             $equipo->increment('presupuesto_restante', $actual->precio);
             $equipo->refresh();
+        }
+
+        // Verificar que ningún otro equipo de la liga tiene esta escudería activa
+        $enOtroEquipo = DB::table('equipos_fantasy_escuderias')
+            ->join('equipos_fantasy', 'equipos_fantasy.id', '=', 'equipos_fantasy_escuderias.equipo_fantasy_id')
+            ->where('equipos_fantasy.liga_id', $liga->id)
+            ->where('equipos_fantasy_escuderias.escuderia_id', $escuderia->id)
+            ->where('equipos_fantasy_escuderias.equipo_fantasy_id', '!=', $equipo->id)
+            ->whereNull('equipos_fantasy_escuderias.fecha_baja')
+            ->exists();
+
+        if ($enOtroEquipo) {
+            if ($actual) {
+                $equipo->escuderias()->attach($actual->id, ['fecha_seleccion' => now()]);
+                $equipo->decrement('presupuesto_restante', $actual->precio);
+            }
+            return response()->json(['message' => 'Esta escudería ya está en otro equipo. Usa la opción Robar'], 422);
         }
 
         if ($escuderia->precio > $equipo->presupuesto_restante) {

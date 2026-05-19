@@ -2,7 +2,7 @@
   <div class="space-y-4">
     <div class="flex items-center justify-between flex-wrap gap-3">
       <h2 class="text-xl font-bold text-white">Pilotos</h2>
-      <input v-model="busqueda" type="text" class="input w-64" placeholder="Buscar piloto..." />
+      <input v-model="busqueda" type="text" class="input w-full sm:w-64" placeholder="Buscar piloto..." />
     </div>
 
     <div v-if="f1Store.cargando" class="text-zinc-400 text-center py-10">Cargando pilotos...</div>

@@ -13,6 +13,7 @@ class ResultadoCarrera extends Model
         'carrera_id', 'piloto_id', 'escuderia_id',
         'posicion_salida', 'posicion_final', 'estado',
         'puntos_oficiales', 'vuelta_rapida', 'piloto_del_dia',
+        'penalizacion_grid', 'penalizacion_tiempo',
         'posicion_clasificacion', 'puntos_fantasy', 'puntos_calculados',
         'puntos_carrera', 'puntos_velocidad',
     ];
@@ -20,9 +21,11 @@ class ResultadoCarrera extends Model
     protected function casts(): array
     {
         return [
-            'vuelta_rapida'    => 'boolean',
-            'piloto_del_dia'   => 'boolean',
-            'puntos_calculados' => 'boolean',
+            'vuelta_rapida'       => 'boolean',
+            'piloto_del_dia'      => 'boolean',
+            'penalizacion_grid'   => 'boolean',
+            'penalizacion_tiempo' => 'boolean',
+            'puntos_calculados'   => 'boolean',
         ];
     }
 

@@ -59,6 +59,11 @@ const routes = [
         name: 'RankingFantasy',
         component: () => import('@/views/race/FantasyRankingView.vue'),
       },
+      {
+        path: 'reglas',
+        name: 'Reglas',
+        component: () => import('@/views/race/ReglasView.vue'),
+      },
       // Perfil de usuario
       {
         path: 'perfil',

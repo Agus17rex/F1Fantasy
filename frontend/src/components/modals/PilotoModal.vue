@@ -1,11 +1,11 @@
 <template>
   <Teleport to="body">
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4" @click.self="$emit('cerrar')">
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4" @click.self="$emit('cerrar')">
       <!-- Fondo -->
       <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="$emit('cerrar')" />
 
       <!-- Panel -->
-      <div class="relative z-10 bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
+      <div class="relative z-10 bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-lg max-h-[88vh] overflow-y-auto shadow-2xl">
 
         <!-- Header -->
         <div class="flex items-center gap-4 p-5 border-b border-zinc-800">

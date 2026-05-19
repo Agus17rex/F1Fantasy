@@ -35,9 +35,10 @@
         :class="tabActiva === tab.id
           ? 'bg-zinc-700 text-white shadow'
           : 'text-zinc-400 hover:text-white'"
-        class="flex-1 py-2 text-sm font-medium rounded-lg transition-colors"
+        class="flex-1 py-2 text-xs sm:text-sm font-medium rounded-lg transition-colors"
       >
-        {{ tab.icono }} {{ tab.label }}
+        <span class="sm:hidden">{{ tab.icono }}</span>
+        <span class="hidden sm:inline">{{ tab.icono }} {{ tab.label }}</span>
       </button>
     </div>
 
@@ -64,15 +65,14 @@
           </div>
           <!-- Avatar -->
           <div class="w-9 h-9 rounded-full bg-red-600/80 flex items-center justify-center text-sm font-bold flex-shrink-0">
-            {{ entrada.usuario.nombre.charAt(0).toUpperCase() }}
+            {{ entrada.usuario.usuario.charAt(0).toUpperCase() }}
           </div>
-          <!-- Nombre -->
+          <!-- Usuario -->
           <div class="flex-1 min-w-0">
             <p class="font-semibold text-white text-sm truncate">
-              {{ entrada.usuario.nombre }}
+              {{ entrada.usuario.usuario }}
               <span v-if="entrada.usuario.id === authStore.user?.id" class="text-red-400 text-xs ml-1">(tú)</span>
             </p>
-            <p class="text-zinc-500 text-xs">@{{ entrada.usuario.usuario }}</p>
           </div>
           <!-- Puntos + icono -->
           <div class="text-right flex-shrink-0 flex items-center gap-3">
@@ -647,7 +647,8 @@ async function cargarEquipo() {
   cargandoEquipo.value = true
   try {
     const { data } = await equipoService.getEquipo(ligaId)
-    equipo.value              = data.equipo
+    // es_valido viene en la raíz de la respuesta, lo metemos dentro del equipo
+    equipo.value              = { ...data.equipo, es_valido: data.es_valido }
     presupuestoRestante.value = data.presupuesto_restante
   } finally {
     cargandoEquipo.value = false

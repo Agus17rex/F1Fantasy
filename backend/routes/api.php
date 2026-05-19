@@ -25,6 +25,7 @@ Route::prefix('f1')->group(function () {
     Route::get('/clasificacion/pilotos',    [ControladorF1::class, 'clasificacionPilotos']);
     Route::get('/clasificacion/escuderias', [ControladorF1::class, 'clasificacionEscuderias']);
     Route::get('/coches',                   [ControladorF1::class, 'coches']);
+    Route::get('/reglas',                   [ControladorF1::class, 'reglas']);
     Route::get('/fantasy-ranking',          [ControladorF1::class, 'rankingFantasy']);
 });
 
@@ -67,12 +68,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // ─── Admin ───────────────────────────────────────────────────────────────
     Route::middleware('admin')->prefix('admin')->group(function () {
-        Route::get('/panel',                           [ControladorAdminCarrera::class, 'panelControl']);
-        Route::get('/carreras',                        [ControladorAdminCarrera::class, 'carreras']);
-        Route::post('/sincronizar',                    [ControladorAdminCarrera::class, 'sincronizarDatosF1']);
-        Route::post('/carreras/{carrera}/sincronizar', [ControladorAdminCarrera::class, 'sincronizarResultados']);
-        Route::post('/carreras/{carrera}/puntuar',     [ControladorAdminCarrera::class, 'puntuarCarrera']);
-        Route::get('/carreras/{carrera}/puntuacion',  [ControladorAdminCarrera::class, 'puntuacionCarrera']);
-        Route::post('/precios',                        [ControladorAdminCarrera::class, 'actualizarPrecios']);
+        Route::get('/panel',                                       [ControladorAdminCarrera::class, 'panelControl']);
+        Route::get('/carreras',                                    [ControladorAdminCarrera::class, 'carreras']);
+        Route::post('/sincronizar',                                [ControladorAdminCarrera::class, 'sincronizarDatosF1']);
+        Route::post('/carreras/{carrera}/sincronizar',             [ControladorAdminCarrera::class, 'sincronizarResultados']);
+        Route::post('/carreras/{carrera}/puntuar',                 [ControladorAdminCarrera::class, 'puntuarCarrera']);
+        Route::get('/carreras/{carrera}/puntuacion',               [ControladorAdminCarrera::class, 'puntuacionCarrera']);
+        Route::patch('/resultados/{resultado}/penalizaciones',     [ControladorAdminCarrera::class, 'actualizarPenalizaciones']);
+        Route::post('/recalcular',                                 [ControladorAdminCarrera::class, 'recalcularTodo']);
+        Route::post('/precios',                                    [ControladorAdminCarrera::class, 'actualizarPrecios']);
     });
 });

@@ -23,30 +23,30 @@ class MediaImagenesSeeder extends Seeder
     private function seedPilotos(): void
     {
 
-        $base = 'https://media.formula1.com/image/upload/c_lfill,w_520/q_auto/d_common:f1:2026:fallback:driver:2026fallbackdriverright.webp/v1740000001/common/f1/2026/';
+        $base = 'https://media.formula1.com/image/upload/f_png/ar_16:9,c_crop,g_north/v1772802140/common/f1/2026/';
         $fotos = [
-            'albon'          => $base . "williams/alealb01/2026williamsalealb01right.webp",
-            'alonso'         => $base . "astonmartin/feralo01/2026astonmartinferalo01right.webp",
-            'antonelli'      => $base . "mercedes/andant01/2026mercedesandant01right.webp",
-            'bearman'        => $base . "haasf1team/olibea01/2026haasf1teamolibea01right.webp",
-            'bortoleto'      => $base . "audi/gabbor01/2026audigabbor01right.webp",
-            'bottas'         => $base . "cadillac/valbot01/2026cadillacvalbot01right.webp",
-            'colapinto'      => $base . "alpine/fracol01/2026alpinefracol01right.webp",
-            'gasly'          => $base . "alpine/piegas01/2026alpinepiegas01right.webp",
-            'hadjar'         => $base . "redbullracing/isahad01/2026redbullracingisahad01right.webp",
-            'hamilton'       => $base . "ferrari/lewham01/2026ferrarilewham01right.webp",
-            'hulkenberg'     => $base . "audi/nichul01/2026audinichul01right.webp",
-            'lawson'         => $base . "racingbulls/lialaw01/2026racingbullslialaw01right.webp",
-            'leclerc'        => $base . "ferrari/chalec01/2026ferrarichalec01right.webp",
-            'arvid_lindblad' => $base . "racingbulls/arvlin01/2026racingbullsarvlin01right.webp",
-            'norris'         => $base . "mclaren/lannor01/2026mclarenlannor01right.webp",
-            'ocon'           => $base . "haasf1team/estoco01/2026haasf1teamestoco01right.webp",
-            'perez'          => $base . "cadillac/serper01/2026cadillacserper01right.webp",
-            'piastri'        => $base . "mclaren/oscpia01/2026mclarenoscpia01right.webp",
-            'russell'        => $base . "mercedes/georus01/2026mercedesgeorus01right.webp",
-            'sainz'          => $base . "williams/carsai01/2026williamscarsai01right.webp",
-            'stroll'         => $base . "astonmartin/lanstr01/2026astonmartinlanstr01right.webp",
-            'max_verstappen' => $base . "redbullracing/maxver01/2026redbullracingmaxver01right.webp"
+            'albon'          => $base . "williams/alealb01/2026williamsalealb01front.webp",
+            'alonso'         => $base . "astonmartin/feralo01/2026astonmartinferalo01front.webp",
+            'antonelli'      => $base . "mercedes/andant01/2026mercedesandant01front.webp",
+            'bearman'        => $base . "haasf1team/olibea01/2026haasf1teamolibea01front.webp",
+            'bortoleto'      => $base . "audi/gabbor01/2026audigabbor01front.webp",
+            'bottas'         => $base . "cadillac/valbot01/2026cadillacvalbot01front.webp",
+            'colapinto'      => $base . "alpine/fracol01/2026alpinefracol01front.webp",
+            'gasly'          => $base . "alpine/piegas01/2026alpinepiegas01front.webp",
+            'hadjar'         => $base . "redbullracing/isahad01/2026redbullracingisahad01front.webp",
+            'hamilton'       => $base . "ferrari/lewham01/2026ferrarilewham01front.webp",
+            'hulkenberg'     => $base . "audi/nichul01/2026audinichul01front.webp",
+            'lawson'         => $base . "racingbulls/lialaw01/2026racingbullslialaw01front.webp",
+            'leclerc'        => $base . "ferrari/chalec01/2026ferrarichalec01front.webp",
+            'arvid_lindblad' => $base . "racingbulls/arvlin01/2026racingbullsarvlin01front.webp",
+            'norris'         => $base . "mclaren/lannor01/2026mclarenlannor01front.webp",
+            'ocon'           => $base . "haasf1team/estoco01/2026haasf1teamestoco01front.webp",
+            'perez'          => $base . "cadillac/serper01/2026cadillacserper01front.webp",
+            'piastri'        => $base . "mclaren/oscpia01/2026mclarenoscpia01front.webp",
+            'russell'        => $base . "mercedes/georus01/2026mercedesgeorus01front.webp",
+            'sainz'          => $base . "williams/carsai01/2026williamscarsai01front.webp",
+            'stroll'         => $base . "astonmartin/lanstr01/2026astonmartinlanstr01front.webp",
+            'max_verstappen' => $base . "redbullracing/maxver01/2026redbullracingmaxver01front.webp"
         ];
 
         foreach ($fotos as $apiId => $url) {
@@ -68,8 +68,8 @@ class MediaImagenesSeeder extends Seeder
             'rb'           => ['logo' => $base . 'racingbulls/2026racingbullslogo.webp',       'color' => '#6692FF'],
             'red_bull'     => ['logo' => $base . 'redbullracing/2026redbullracinglogo.webp',   'color' => '#3671C6'],
             'williams'     => ['logo' => $base . 'williams/2026williamslogo.webp',             'color' => '#64C4FF'],
-            'audi'         => ['logo' => $base . 'audi/2026audilogowhite.webp',                'color' => '#C0C0C0'],
-            'cadillac'     => ['logo' => $base . 'cadillac/2026cadillaclogowhite.webp',        'color' => '#C8A848'],
+            'audi'         => ['logo' => $base . 'audi/2026audilogo.webp',                'color' => '#C0C0C0'],
+            'cadillac'     => ['logo' => $base . 'cadillac/2026cadillaclogo.webp',        'color' => '#C8A848'],
         ];
 
         foreach ($datos as $apiId => $info) {

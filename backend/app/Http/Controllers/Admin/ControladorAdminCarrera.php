@@ -6,11 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\Carrera;
 use App\Models\EquipoFantasy;
 use App\Models\Liga;
+use App\Models\MiembroLiga;
+use App\Models\PuntosEquipoCarrera;
+use App\Models\ResultadoCarrera;
 use App\Models\User;
 use App\Services\ServicioApiF1;
 use App\Services\ServicioPuntuacion;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class ControladorAdminCarrera extends Controller
@@ -53,7 +57,7 @@ class ControladorAdminCarrera extends Controller
         }
 
         if ($carrera->estado === 'scored') {
-            return response()->json(['message' => 'Esta carrera ya ha sido puntuada'], 422);
+            return response()->json(['message' => 'Esta carrera ya ha sido puntuada. Usa "Recalcular todo" para actualizar.'], 422);
         }
 
         $this->servicioPuntuacion->procesarPuntosCarrera($carrera);
@@ -62,6 +66,67 @@ class ControladorAdminCarrera extends Controller
             'message' => "Puntos calculados para: {$carrera->nombre}",
             'carrera' => $carrera->fresh(),
         ]);
+    }
+
+    /**
+     * Marca/desmarca penalizaciones manuales (grid, tiempo) en un resultado concreto.
+     * El admin llama a esto ANTES de puntuar, o después y luego lanza "recalcular todo".
+     */
+    public function actualizarPenalizaciones(ResultadoCarrera $resultado, Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'penalizacion_grid'   => 'boolean',
+            'penalizacion_tiempo' => 'boolean',
+        ]);
+
+        $resultado->update($data);
+
+        return response()->json([
+            'message'   => 'Penalizaciones actualizadas',
+            'resultado' => $resultado->only(['id', 'penalizacion_grid', 'penalizacion_tiempo']),
+        ]);
+    }
+
+    /**
+     * Recalcula todos los puntos desde cero:
+     *  1. Recalcula puntos individuales de cada resultado
+     *  2. Resetea totales de equipos y miembros
+     *  3. Vuelve a calcular puntos de equipo para cada carrera ya puntuada
+     */
+    public function recalcularTodo(): JsonResponse
+    {
+        $carreras = Carrera::where('estado', 'scored')
+            ->with('resultados')
+            ->orderBy('fecha')
+            ->get();
+
+        // Paso 1: recalcular puntos base de cada resultado
+        $resultados = ResultadoCarrera::all();
+        foreach ($resultados as $resultado) {
+            $this->servicioPuntuacion->calcularPuntosPiloto($resultado);
+        }
+
+        // Paso 2: aplicar BEATS_TEAMMATE por carrera
+        foreach ($carreras as $carrera) {
+            $this->servicioPuntuacion->aplicarBeatsTeammate($carrera);
+        }
+
+        // Paso 3: resetear totales
+        PuntosEquipoCarrera::query()->delete();
+        EquipoFantasy::query()->update(['puntos_totales' => 0]);
+        MiembroLiga::query()->update(['puntos_totales' => 0]);
+
+        // Paso 4: recalcular por carrera puntuada
+        foreach ($carreras as $carrera) {
+            $equipos = EquipoFantasy::with(['miembroLiga'])->get();
+            DB::transaction(function () use ($carrera, $equipos) {
+                foreach ($equipos as $equipo) {
+                    $this->servicioPuntuacion->calcularPuntosEquipo($equipo, $carrera);
+                }
+            });
+        }
+
+        return response()->json(['message' => 'Recálculo completado correctamente']);
     }
 
     public function carreras(): JsonResponse
@@ -103,13 +168,17 @@ class ControladorAdminCarrera extends Controller
             ->get();
 
         $filas = $resultados->map(fn($r) => [
+            'id'                     => $r->id,
             'piloto'                 => $r->piloto?->nombre . ' ' . $r->piloto?->apellido,
             'escuderia'              => $r->escuderia?->nombre,
+            'posicion_salida'        => $r->posicion_salida,
             'posicion_final'         => $r->posicion_final,
             'posicion_clasificacion' => $r->posicion_clasificacion,
             'estado'                 => $r->estado,
             'vuelta_rapida'          => $r->vuelta_rapida,
             'piloto_del_dia'         => $r->piloto_del_dia,
+            'penalizacion_grid'      => (bool) $r->penalizacion_grid,
+            'penalizacion_tiempo'    => (bool) $r->penalizacion_tiempo,
             'puntos_carrera'         => $r->puntos_carrera,
             'puntos_velocidad'       => $r->puntos_velocidad,
             'puntos_fantasy'         => $r->puntos_fantasy,
