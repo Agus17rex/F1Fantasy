@@ -35,7 +35,7 @@
             />
           </div>
 
-          <p v-if="error" class="text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
+          <p v-if="error" class="text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 leading-relaxed">
             {{ error }}
           </p>
 
@@ -86,7 +86,28 @@ async function handleLogin() {
     const redirect = router.currentRoute.value.query.redirect || '/'
     router.push(redirect)
   } catch (e) {
-    error.value = e.response?.data?.message || 'Error al iniciar sesión'
+    const status = e.response?.status
+
+    if (!e.response) {
+      // Sin respuesta del servidor: caído, red incorrecta, CORS…
+      error.value = '⚠️ No se puede conectar con el servidor. Comprueba que estás en la misma red WiFi que el servidor y que éste está en marcha.'
+    } else if (status === 401) {
+      error.value = 'Email o contraseña incorrectos. Revisa tus datos e inténtalo de nuevo.'
+    } else if (status === 422) {
+      // Errores de validación — Laravel devuelve { errors: { campo: [...] } }
+      const errors = e.response.data?.errors
+      if (errors) {
+        error.value = Object.values(errors).flat().join(' ')
+      } else {
+        error.value = e.response.data?.message || 'Datos inválidos.'
+      }
+    } else if (status === 429) {
+      error.value = 'Demasiados intentos fallidos. Espera unos minutos antes de volver a intentarlo.'
+    } else if (status >= 500) {
+      error.value = `Error interno del servidor (${status}). Contacta al administrador si persiste.`
+    } else {
+      error.value = e.response?.data?.message || `Error inesperado (${status ?? 'sin respuesta'}).`
+    }
   } finally {
     loading.value = false
   }
