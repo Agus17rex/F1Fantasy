@@ -17,4 +17,4 @@ Route::get('/{path?}', function () {
     );
 
     return response()->file($index);
-})->where('path', '.*');
+})->where('path', '^(?!api(/|$)).*');
