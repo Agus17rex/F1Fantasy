@@ -52,6 +52,16 @@
           </RouterLink>
         </p>
       </div>
+
+      <!-- Aviso de red -->
+      <div class="mt-4 rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 flex gap-3">
+        <span class="text-amber-400 text-lg flex-shrink-0 mt-0.5">⚠️</span>
+        <div class="text-xs text-zinc-400 space-y-1">
+          <p class="text-amber-400 font-semibold">¿No puedes iniciar sesión?</p>
+          <p>Si accedes desde el móvil u otro dispositivo, asegúrate de estar conectado a la <span class="text-white font-medium">misma red WiFi</span> que el servidor.</p>
+          <p>El servidor debe estar encendido y ejecutándose en el PC principal.</p>
+        </div>
+      </div>
     </div>
   </div>
 </template>
