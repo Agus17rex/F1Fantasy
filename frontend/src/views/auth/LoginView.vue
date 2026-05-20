@@ -58,8 +58,9 @@
         <span class="text-amber-400 text-lg flex-shrink-0 mt-0.5">⚠️</span>
         <div class="text-xs text-zinc-400 space-y-1">
           <p class="text-amber-400 font-semibold">¿No puedes iniciar sesión?</p>
-          <p>Si accedes desde el móvil u otro dispositivo, asegúrate de estar conectado a la <span class="text-white font-medium">misma red WiFi</span> que el servidor.</p>
-          <p>El servidor debe estar encendido y ejecutándose en el PC principal.</p>
+          <p><span class="text-white font-medium">1.</span> Asegúrate de que el servidor backend está arrancado: <span class="text-white font-mono">php artisan serve</span></p>
+          <p><span class="text-white font-medium">2.</span> Si accedes desde el móvil u otro dispositivo, conéctate a la <span class="text-white font-medium">misma red WiFi</span> que el PC servidor.</p>
+          <p><span class="text-white font-medium">3.</span> Si el error persiste, reinicia ambos servidores (frontend y backend).</p>
         </div>
       </div>
     </div>
@@ -88,9 +89,9 @@ async function handleLogin() {
   } catch (e) {
     const status = e.response?.status
 
-    if (!e.response) {
-      // Sin respuesta del servidor: caído, red incorrecta, CORS…
-      error.value = '⚠️ No se puede conectar con el servidor. Comprueba que estás en la misma red WiFi que el servidor y que éste está en marcha.'
+    if (!e.response || status === 404) {
+      // Sin respuesta o 404: el servidor no está arrancado o el proxy no llega al backend
+      error.value = '⚠️ No se puede conectar con el servidor. Comprueba que el servidor backend está arrancado (php artisan serve) y que estás en la misma red WiFi.'
     } else if (status === 401) {
       error.value = 'Email o contraseña incorrectos. Revisa tus datos e inténtalo de nuevo.'
     } else if (status === 422) {
