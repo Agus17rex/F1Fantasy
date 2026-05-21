@@ -14,6 +14,7 @@
 # Logs
 /backend/storage/logs/
 *.log
+storage/logs/*.log
 
 # Cache Laravel
 /backend/bootstrap/cache/
