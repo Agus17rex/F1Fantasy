@@ -17,4 +17,4 @@ Route::get('/{path?}', function () {
     );
 
     return response()->file($index);
-})->where('path', '^(?!api(/|$)).*');
+})->where('path', '^(?!api(/|$))(?!.*\.(svg|ico|png|jpg|jpeg|gif|webp|css|js|woff2?|ttf|eot|map|txt|xml|json)).*');
