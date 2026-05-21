@@ -103,3 +103,17 @@ async function handleLogin() {
   }
 }
 </script>
+
+<style scoped>
+.card {
+  border-color: rgba(255, 24, 1, 0.28);
+  box-shadow: 0 0 14px rgba(255, 24, 1, 0.06);
+}
+.input {
+  border-color: rgba(255, 24, 1, 0.20);
+}
+.input:focus {
+  border-color: rgba(255, 24, 1, 0.7);
+  box-shadow: 0 0 0 2px rgba(255, 24, 1, 0.12);
+}
+</style>

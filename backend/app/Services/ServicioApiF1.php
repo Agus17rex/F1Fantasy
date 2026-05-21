@@ -63,7 +63,9 @@ class ServicioApiF1
         foreach ($clasificacion as $entrada) {
             $datosPiloto = $entrada['Driver'];
             $apiId       = $datosPiloto['driverId'];
-            $escuderia   = Escuderia::where('api_id', $entrada['Constructors'][0]['constructorId'] ?? null)->first();
+            $constructorIdRaw = $entrada['Constructors'][0]['constructorId'] ?? null;
+            $constructorId    = self::RENOMBRES_ESCUDERIAS[$constructorIdRaw] ?? $constructorIdRaw;
+            $escuderia        = Escuderia::where('api_id', $constructorId)->first();
 
             Piloto::updateOrCreate(
                 ['api_id' => $apiId],
@@ -107,6 +109,12 @@ class ServicioApiF1
         return $respuesta->json('MRData.ConstructorTable.Constructors', []);
     }
 
+    /**
+     * Mapeo de constructorId de la API → api_id interno.
+     * Permite normalizar nombres de escuderías cuando la API usa IDs distintos.
+     */
+    private const RENOMBRES_ESCUDERIAS = [];
+
     public function sincronizarEscuderias(?int $temporada = null): int
     {
         $escuderias    = $this->obtenerEscuderias($temporada);
@@ -114,19 +122,30 @@ class ServicioApiF1
         $apiIds        = [];
 
         foreach ($escuderias as $datosEscuderia) {
+            $idOriginal = $datosEscuderia['constructorId'];
+            $apiId      = self::RENOMBRES_ESCUDERIAS[$idOriginal] ?? $idOriginal;
+
+            // Normalizar también el nombre para Audi y Cadillac
+            $nombre = match ($apiId) {
+                'audi'     => 'Audi F1 Team',
+                'cadillac' => 'Cadillac F1 Team',
+                default    => $datosEscuderia['name'],
+            };
+
             Escuderia::updateOrCreate(
-                ['api_id' => $datosEscuderia['constructorId']],
+                ['api_id' => $apiId],
                 [
-                    'nombre'       => $datosEscuderia['name'],
+                    'nombre'       => $nombre,
                     'nacionalidad' => Traducciones::nacionalidad($datosEscuderia['nationality'] ?? null),
                     'activa'       => true,
                 ]
             );
-            $apiIds[] = $datosEscuderia['constructorId'];
+
+            $apiIds[] = $apiId;
             $sincronizados++;
         }
 
-        // Desactivar escuderías que ya no aparecen en la API (ej: Sauber → Audi)
+        // Desactivar escuderías que ya no aparecen en la API
         if (!empty($apiIds)) {
             Escuderia::whereNotIn('api_id', $apiIds)->update(['activa' => false]);
         }

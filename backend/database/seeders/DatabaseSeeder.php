@@ -2,8 +2,12 @@
 
 namespace Database\Seeders;
 
+use App\Models\Escuderia;
+use App\Models\Piloto;
 use App\Models\ReglaPuntuacion;
 use App\Models\User;
+use App\Services\ServicioApiF1;
+use App\Support\Traducciones;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -76,15 +80,74 @@ class DatabaseSeeder extends Seeder
             );
         }
 
-        $this->call([
-            CircuitSeeder::class,
-        ]);
+        $this->call([CircuitSeeder::class]);
 
-        // ⚠️  CochesSeeder, EliminarSauberSeeder y MediaImagenesSeeder requieren
-        //     que las escuderías ya estén en BD (ejecutar sync desde el panel admin primero).
-        //     Lánzalos manualmente después de sincronizar:
-        //       php artisan db:seed --class=CochesSeeder
-        //       php artisan db:seed --class=EliminarSauberSeeder
-        //       php artisan db:seed --class=MediaImagenesSeeder
+        // Sincronizar escuderías, pilotos y carreras desde la API de F1
+        // (necesario antes de CochesSeeder y MediaImagenesSeeder)
+        $this->command->info('Sincronizando datos desde la API de F1...');
+        try {
+            $api = app(ServicioApiF1::class);
+            $escuderias = $api->sincronizarEscuderias();
+            $pilotos    = $api->sincronizarPilotos();
+            $carreras   = $api->sincronizarCarreras();
+            $this->command->info("  ✓ {$escuderias} escuderías, {$pilotos} pilotos, {$carreras} carreras");
+        } catch (\Throwable $e) {
+            $this->command->warn('  ⚠ No se pudo conectar con la API de F1: ' . $e->getMessage());
+            $this->command->warn('  Ejecuta manualmente después: php artisan db:seed --class=CochesSeeder');
+            return;
+        }
+
+        // Equipos nuevos 2026 que la API aún puede no devolver — creamos si no existen
+        $this->asegurarEquipos2026();
+
+        $this->call([
+            CochesSeeder::class,
+            MediaImagenesSeeder::class,
+        ]);
+    }
+
+    /**
+     * Crea los equipos y pilotos de 2026 que la API de Ergast aún no devuelve.
+     * Si ya existen (porque la API los devolvió), updateOrCreate los deja intactos.
+     */
+    private function asegurarEquipos2026(): void
+    {
+        // ── Audi F1 Team ──────────────────────────────────────────────────────
+        $audi = Escuderia::updateOrCreate(
+            ['api_id' => 'audi'],
+            ['nombre' => 'Audi F1 Team', 'nacionalidad' => 'Alemana', 'activa' => true]
+        );
+
+        Piloto::updateOrCreate(
+            ['api_id' => 'hulkenberg'],
+            ['nombre' => 'Nico', 'apellido' => 'Hülkenberg', 'codigo' => 'HUL',
+             'numero' => 27, 'nacionalidad' => 'Alemana', 'activo' => true,
+             'es_reserva' => false, 'escuderia_id' => $audi->id]
+        );
+        Piloto::updateOrCreate(
+            ['api_id' => 'bortoleto'],
+            ['nombre' => 'Gabriel', 'apellido' => 'Bortoleto', 'codigo' => 'BOR',
+             'numero' => 5, 'nacionalidad' => 'Brasileña', 'activo' => true,
+             'es_reserva' => false, 'escuderia_id' => $audi->id]
+        );
+
+        // ── Cadillac F1 Team ──────────────────────────────────────────────────
+        $cadillac = Escuderia::updateOrCreate(
+            ['api_id' => 'cadillac'],
+            ['nombre' => 'Cadillac F1 Team', 'nacionalidad' => 'Estadounidense', 'activa' => true]
+        );
+
+        Piloto::updateOrCreate(
+            ['api_id' => 'bottas'],
+            ['nombre' => 'Valtteri', 'apellido' => 'Bottas', 'codigo' => 'BOT',
+             'numero' => 77, 'nacionalidad' => 'Finlandesa', 'activo' => true,
+             'es_reserva' => false, 'escuderia_id' => $cadillac->id]
+        );
+        Piloto::updateOrCreate(
+            ['api_id' => 'perez'],
+            ['nombre' => 'Sergio', 'apellido' => 'Pérez', 'codigo' => 'PER',
+             'numero' => 11, 'nacionalidad' => 'Mexicana', 'activo' => true,
+             'es_reserva' => false, 'escuderia_id' => $cadillac->id]
+        );
     }
 }
