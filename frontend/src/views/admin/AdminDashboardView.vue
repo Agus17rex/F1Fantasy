@@ -96,11 +96,11 @@ function formatearFecha(d) {
 }
 
 function claseBadge(estado) {
-  return { upcoming: 'badge-upcoming', active: 'badge-active', scored: 'badge-scored' }[estado] || 'badge-scored'
+  return { upcoming: 'badge-pending', active: 'badge-active', scored: 'badge-scored' }[estado] || 'badge-scored'
 }
 
 function etiquetaEstado(estado) {
-  return { upcoming: 'Próxima', active: 'Por puntuar', scored: 'Puntuada' }[estado] || estado
+  return { upcoming: 'Sin puntuar', active: 'Por puntuar', scored: 'Puntuada' }[estado] || estado
 }
 
 onMounted(cargarPanel)

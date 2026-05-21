@@ -28,8 +28,8 @@
       </div>
 
       <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        <RouterLink to="/admin" custom v-slot="{ isActive, navigate }">
-          <button @click="navegar(navigate)" :class="isActive ? 'nav-link-active' : 'nav-link'" class="w-full">
+        <RouterLink to="/admin" custom v-slot="{ navigate }">
+          <button @click="navegar(navigate)" :class="route.name === 'AdminPanel' ? 'nav-link-active' : 'nav-link'" class="w-full">
             📊 Dashboard
           </button>
         </RouterLink>
@@ -83,10 +83,11 @@
 
 <script setup>
 import { ref } from 'vue'
-import { RouterLink, RouterView } from 'vue-router'
+import { RouterLink, RouterView, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
-const authStore    = useAuthStore()
+const authStore      = useAuthStore()
+const route          = useRoute()
 const sidebarAbierto = ref(false)
 
 function navegar(fn) {
