@@ -80,7 +80,7 @@ async function handleLogin() {
 
     if (!e.response || status === 404) {
       // Sin respuesta o 404: el servidor no está arrancado o el proxy no llega al backend
-      error.value = '⚠️ No se puede conectar con el servidor. Comprueba que el servidor backend está arrancado (php artisan serve) y que estás en la misma red WiFi.'
+      error.value = 'No se puede conectar con el servidor. Inténtalo de nuevo en unos segundos.'
     } else if (status === 401) {
       error.value = 'Email o contraseña incorrectos. Revisa tus datos e inténtalo de nuevo.'
     } else if (status === 422) {
