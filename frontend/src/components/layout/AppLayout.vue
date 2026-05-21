@@ -59,6 +59,12 @@
           </button>
         </RouterLink>
 
+        <RouterLink to="/puntuaciones" custom v-slot="{ isActive, navigate }">
+          <button @click="navegar(navigate)" :class="isActive ? 'nav-link-active' : 'nav-link'" class="w-full">
+            <IconChart /> Puntuaciones
+          </button>
+        </RouterLink>
+
         <RouterLink to="/ranking-fantasy" custom v-slot="{ isActive, navigate }">
           <button @click="navegar(navigate)" :class="isActive ? 'nav-link-active' : 'nav-link'" class="w-full">
             <IconChart /> Ranking Fantasy
@@ -164,7 +170,8 @@ const nextRace = computed(() => f1Store.proximaCarrera)
 const pageTitles = {
   Dashboard: 'Dashboard', Carreras: 'Calendario', DetalleCarrera: 'Carrera',
   Pilotos: 'Pilotos', Escuderias: 'Escuderías', Coches: 'Coches',
-  RankingFantasy: 'Ranking Fantasy', Ligas: 'Mis Ligas', DetalleLiga: 'Liga', Perfil: 'Mi Perfil',
+  Puntuaciones: 'Puntuaciones', RankingFantasy: 'Ranking Fantasy',
+  Ligas: 'Mis Ligas', DetalleLiga: 'Liga', Perfil: 'Mi Perfil',
   Reglas: 'Reglas de Puntuación',
 }
 

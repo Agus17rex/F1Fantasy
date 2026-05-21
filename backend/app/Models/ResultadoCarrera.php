@@ -15,7 +15,7 @@ class ResultadoCarrera extends Model
         'puntos_oficiales', 'vuelta_rapida', 'piloto_del_dia',
         'penalizacion_grid', 'penalizacion_tiempo',
         'posicion_clasificacion', 'puntos_fantasy', 'puntos_calculados',
-        'puntos_carrera', 'puntos_velocidad',
+        'puntos_carrera', 'puntos_qualy',
     ];
 
     protected function casts(): array

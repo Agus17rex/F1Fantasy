@@ -24,9 +24,11 @@ Route::prefix('f1')->group(function () {
     Route::get('/carreras/{carrera}',       [ControladorF1::class, 'carrera']);
     Route::get('/clasificacion/pilotos',    [ControladorF1::class, 'clasificacionPilotos']);
     Route::get('/clasificacion/escuderias', [ControladorF1::class, 'clasificacionEscuderias']);
-    Route::get('/coches',                   [ControladorF1::class, 'coches']);
-    Route::get('/reglas',                   [ControladorF1::class, 'reglas']);
-    Route::get('/fantasy-ranking',          [ControladorF1::class, 'rankingFantasy']);
+    Route::get('/coches',                            [ControladorF1::class, 'coches']);
+    Route::get('/reglas',                            [ControladorF1::class, 'reglas']);
+    Route::get('/fantasy-ranking',                   [ControladorF1::class, 'rankingFantasy']);
+    Route::get('/puntuacion-temporada',              [ControladorF1::class, 'puntuacionTemporada']);
+    Route::get('/carreras/{carrera}/puntuacion',     [ControladorF1::class, 'puntuacionCarrera']);
 });
 
 // ─── Rutas autenticadas ───────────────────────────────────────────────────────

@@ -26,4 +26,8 @@ export const f1Service = {
 
   // Ranking fantasy global
   getFantasyRanking: () => api.get('/f1/fantasy-ranking'),
+
+  // Puntuaciones
+  getPuntuacionTemporada: ()   => api.get('/f1/puntuacion-temporada'),
+  getPuntuacionCarrera:   (id) => api.get(`/f1/carreras/${id}/puntuacion`),
 }

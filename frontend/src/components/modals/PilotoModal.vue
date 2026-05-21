@@ -104,8 +104,8 @@
                 </span>
               </div>
               <div class="flex items-center justify-between py-2 border-b border-zinc-800">
-                <span class="text-zinc-400 text-sm">⚡ Pts de velocidad (qualy + VR + PD)</span>
-                <span class="text-blue-400 font-bold">+{{ resultado.puntos_velocidad }}</span>
+                <span class="text-zinc-400 text-sm">🏎️ Pts de clasificación (qualy)</span>
+                <span class="text-blue-400 font-bold">+{{ resultado.puntos_qualy }}</span>
               </div>
               <div class="flex items-center justify-between py-2 bg-zinc-800 rounded-lg px-3">
                 <span class="text-white font-semibold">Total fantasy</span>

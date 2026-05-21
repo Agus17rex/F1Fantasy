@@ -60,6 +60,11 @@ const routes = [
         component: () => import('@/views/race/FantasyRankingView.vue'),
       },
       {
+        path: 'puntuaciones',
+        name: 'Puntuaciones',
+        component: () => import('@/views/race/PuntuacionesView.vue'),
+      },
+      {
         path: 'reglas',
         name: 'Reglas',
         component: () => import('@/views/race/ReglasView.vue'),

@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
 class RecalcularPuntos extends Command
 {
     protected $signature   = 'puntos:recalcular';
-    protected $description = 'Recalcula puntos_carrera y puntos_velocidad de todos los resultados y rehace los totales de equipos';
+    protected $description = 'Recalcula puntos_carrera y puntos_qualy de todos los resultados y rehace los totales de equipos';
 
     public function handle(ServicioPuntuacion $servicio): int
     {

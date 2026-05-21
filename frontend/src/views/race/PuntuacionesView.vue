@@ -1,38 +1,21 @@
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between flex-wrap gap-3">
-      <h2 class="text-xl font-bold text-white">Puntuaciones por Carrera</h2>
-      <button @click="recalcularTodo" :disabled="recalculando"
-        class="flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white text-sm font-medium transition-colors">
-        <svg v-if="recalculando" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-        </svg>
-        <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-        </svg>
-        {{ recalculando ? 'Recalculando...' : 'Recalcular todo' }}
+    <h2 class="text-xl font-bold text-white">Puntuaciones</h2>
+
+    <!-- Selector de carrera -->
+    <div class="flex flex-wrap gap-2">
+      <button
+        v-for="c in opcionesCarrera" :key="c.id"
+        @click="seleccionar(c.id)"
+        :class="carreraSeleccionada === c.id
+          ? 'bg-red-600 text-white'
+          : 'bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700'"
+        class="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors">
+        {{ c.label }}
       </button>
     </div>
 
-    <p class="text-zinc-500 text-xs -mt-2">
-      "Recalcular todo" aplica todas las reglas desde cero (incluye adelantamientos, superar compañero y penalizaciones manuales).
-    </p>
-
-    <!-- Selector de carrera -->
-    <div class="card flex flex-col sm:flex-row sm:items-center gap-3">
-      <label class="text-zinc-400 text-sm whitespace-nowrap">Seleccionar carrera:</label>
-      <select v-model="carreraSeleccionada" @change="cargarPuntuacion"
-        class="flex-1 bg-zinc-800 text-white border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-red-500">
-        <option value="">— Elige una carrera —</option>
-        <option v-for="c in carreras" :key="c.id" :value="c.id">
-          R{{ c.ronda }} · {{ c.nombre }} ({{ formatearFecha(c.fecha) }})
-          {{ c.estado === 'scored' ? '✓' : '' }}
-        </option>
-      </select>
-    </div>
-
-    <div v-if="cargando" class="text-zinc-400 text-center py-10">Cargando puntuaciones...</div>
+    <div v-if="cargando" class="text-zinc-400 text-center py-16">Cargando puntuaciones...</div>
 
     <template v-else-if="datos">
 
@@ -83,8 +66,7 @@
                   </span>
                 </td>
                 <td class="px-4 py-3 text-center">
-                  <span class="font-black text-lg"
-                    :style="{ color: r.escuderia.color || '#60a5fa' }">
+                  <span class="font-black text-lg" :style="{ color: r.escuderia.color || '#60a5fa' }">
                     {{ r.puntos_qualy }}
                   </span>
                 </td>
@@ -101,10 +83,10 @@
             <thead class="bg-zinc-900 text-zinc-400 text-xs uppercase tracking-wider">
               <tr>
                 <th class="px-4 py-3 text-left">Piloto</th>
-                <th class="px-4 py-3 text-center">Salida</th>
-                <th class="px-4 py-3 text-center">Llegada</th>
-                <th class="px-4 py-3 text-center">Estado</th>
-                <th class="px-4 py-3 text-center">VR</th>
+                <th v-if="!esTotalTemporada" class="px-4 py-3 text-center">Salida</th>
+                <th v-if="!esTotalTemporada" class="px-4 py-3 text-center">Llegada</th>
+                <th v-if="!esTotalTemporada" class="px-4 py-3 text-center">Estado</th>
+                <th v-if="!esTotalTemporada" class="px-4 py-3 text-center">VR</th>
                 <th class="px-4 py-3 text-center">Pts Carrera</th>
               </tr>
             </thead>
@@ -124,9 +106,9 @@
                     </div>
                   </div>
                 </td>
-                <td class="px-4 py-3 text-center text-zinc-400 font-mono">{{ r.posicion_salida ?? '—' }}</td>
-                <td class="px-4 py-3 text-center text-zinc-300 font-mono font-bold">{{ r.posicion_final ?? '—' }}</td>
-                <td class="px-4 py-3 text-center">
+                <td v-if="!esTotalTemporada" class="px-4 py-3 text-center text-zinc-400 font-mono">{{ r.posicion_salida ?? '—' }}</td>
+                <td v-if="!esTotalTemporada" class="px-4 py-3 text-center text-zinc-300 font-mono font-bold">{{ r.posicion_final ?? '—' }}</td>
+                <td v-if="!esTotalTemporada" class="px-4 py-3 text-center">
                   <span class="text-xs px-2 py-0.5 rounded-full"
                     :class="{
                       'bg-green-500/15 text-green-400': r.estado === 'Finalizó',
@@ -136,7 +118,7 @@
                     {{ r.estado || '—' }}
                   </span>
                 </td>
-                <td class="px-4 py-3 text-center">
+                <td v-if="!esTotalTemporada" class="px-4 py-3 text-center">
                   <span v-if="r.vuelta_rapida" class="text-purple-400 text-base">⚡</span>
                   <span v-else class="text-zinc-700">—</span>
                 </td>
@@ -150,7 +132,6 @@
             </tbody>
           </table>
         </div>
-        <p class="text-zinc-600 text-xs mt-2 px-1">VR = Vuelta rápida</p>
       </div>
 
       <!-- ── Total Pilotos ── -->
@@ -195,8 +176,7 @@
                   <span v-else class="text-zinc-700">—</span>
                 </td>
                 <td class="px-4 py-3 text-center">
-                  <span class="font-black text-xl"
-                    :style="{ color: r.escuderia.color || '#fff' }">
+                  <span class="font-black text-xl" :style="{ color: r.escuderia.color || '#fff' }">
                     {{ r.puntos_fantasy }}
                   </span>
                 </td>
@@ -230,8 +210,7 @@
                 </td>
                 <td class="px-4 py-3 text-center text-zinc-400 font-mono">{{ e.suma_carrera }}</td>
                 <td class="px-4 py-3 text-center">
-                  <span class="font-black text-xl"
-                    :style="{ color: e.escuderia.color || '#4ade80' }">
+                  <span class="font-black text-xl" :style="{ color: e.escuderia.color || '#4ade80' }">
                     {{ e.pts_escuderia }}
                   </span>
                 </td>
@@ -239,7 +218,6 @@
             </tbody>
           </table>
         </div>
-        <p class="text-zinc-600 text-xs mt-2 px-1">Pts escudería = suma puntos carrera de sus 2 pilotos ÷ 2</p>
       </div>
 
       <!-- ── Coches ── -->
@@ -272,8 +250,7 @@
                 </td>
                 <td class="px-4 py-3 text-center text-zinc-400 font-mono">{{ e.suma_qualy }}</td>
                 <td class="px-4 py-3 text-center">
-                  <span class="font-black text-xl"
-                    :style="{ color: e.escuderia.color || '#60a5fa' }">
+                  <span class="font-black text-xl" :style="{ color: e.escuderia.color || '#60a5fa' }">
                     {{ e.pts_coche }}
                   </span>
                 </td>
@@ -281,29 +258,27 @@
             </tbody>
           </table>
         </div>
-        <p class="text-zinc-600 text-xs mt-2 px-1">Pts coche = suma puntos qualy de sus 2 pilotos ÷ 2</p>
       </div>
 
     </template>
 
-    <div v-else-if="carreraSeleccionada" class="card text-zinc-400 text-center py-8">
-      Esta carrera aún no tiene puntuaciones calculadas.
+    <div v-else-if="!cargando && carreraSeleccionada !== null" class="card text-zinc-400 text-center py-8">
+      Aún no hay carreras puntuadas.
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { adminService } from '@/services/adminService'
+import { f1Service } from '@/services/f1Service'
 import AvatarPiloto  from '@/components/media/AvatarPiloto.vue'
 import LogoEscuderia from '@/components/media/LogoEscuderia.vue'
 import ImagenCoche   from '@/components/media/ImagenCoche.vue'
 
 const carreras            = ref([])
-const carreraSeleccionada = ref('')
+const carreraSeleccionada = ref(0)   // 0 = total temporada (R0)
 const datos               = ref(null)
 const cargando            = ref(false)
-const recalculando        = ref(false)
 const tabActiva           = ref('total')
 
 const tabs = [
@@ -314,6 +289,17 @@ const tabs = [
   { id: 'coches',     label: '🔧 Coches' },
 ]
 
+const esTotalTemporada = computed(() => carreraSeleccionada.value === 0)
+
+// R0 siempre primero, luego las carreras puntuadas
+const opcionesCarrera = computed(() => [
+  { id: 0, label: 'R0 · Total' },
+  ...carreras.value
+    .filter(c => c.estado === 'scored')
+    .sort((a, b) => a.ronda - b.ronda)
+    .map(c => ({ id: c.id, label: `R${c.ronda} · ${c.nombre.replace('Grand Prix', 'GP')}` })),
+])
+
 const bonusPiloto = (r) => r.puntos_fantasy - r.puntos_carrera - r.puntos_qualy
 
 const resultadosOrdenadosPorQualy = computed(() =>
@@ -321,36 +307,35 @@ const resultadosOrdenadosPorQualy = computed(() =>
     (a.posicion_clasificacion ?? 99) - (b.posicion_clasificacion ?? 99)
   )
 )
-
 const resultadosOrdenadosPorCarrera = computed(() =>
   [...(datos.value?.resultados ?? [])].sort((a, b) =>
-    (a.posicion_final ?? 99) - (b.posicion_final ?? 99)
+    esTotalTemporada.value
+      ? b.puntos_carrera - a.puntos_carrera
+      : (a.posicion_final ?? 99) - (b.posicion_final ?? 99)
   )
 )
-
 const resultadosOrdenadosPorTotal = computed(() =>
   [...(datos.value?.resultados ?? [])].sort((a, b) => b.puntos_fantasy - a.puntos_fantasy)
 )
-
 const escuderiasOrdenadas = computed(() =>
   [...(datos.value?.por_escuderia ?? [])].sort((a, b) => b.pts_escuderia - a.pts_escuderia)
 )
-
 const cochesOrdenados = computed(() =>
   [...(datos.value?.por_escuderia ?? [])].sort((a, b) => b.pts_coche - a.pts_coche)
 )
 
-async function cargarCarreras() {
-  const { data } = await adminService.getCarreras()
-  carreras.value = data
+async function seleccionar(id) {
+  carreraSeleccionada.value = id
+  await cargarDatos()
 }
 
-async function cargarPuntuacion() {
-  if (!carreraSeleccionada.value) { datos.value = null; return }
+async function cargarDatos() {
   cargando.value = true
   datos.value    = null
   try {
-    const { data } = await adminService.getPuntuacionCarrera(carreraSeleccionada.value)
+    const { data } = carreraSeleccionada.value === 0
+      ? await f1Service.getPuntuacionTemporada()
+      : await f1Service.getPuntuacionCarrera(carreraSeleccionada.value)
     datos.value = data
   } catch {
     datos.value = null
@@ -359,23 +344,10 @@ async function cargarPuntuacion() {
   }
 }
 
-async function recalcularTodo() {
-  if (!confirm('¿Recalcular todos los puntos desde cero? Esto puede tardar unos segundos.')) return
-  recalculando.value = true
-  try {
-    await adminService.recalcularTodo()
-    alert('✓ Recálculo completado correctamente')
-    if (carreraSeleccionada.value) await cargarPuntuacion()
-  } catch (e) {
-    alert('Error al recalcular: ' + (e.response?.data?.message ?? e.message))
-  } finally {
-    recalculando.value = false
-  }
-}
-
-function formatearFecha(d) {
-  return new Date(d).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
-}
-
-onMounted(cargarCarreras)
+onMounted(async () => {
+  const { data } = await f1Service.getCarreras()
+  carreras.value = data
+  // Cargar R0 por defecto
+  await cargarDatos()
+})
 </script>

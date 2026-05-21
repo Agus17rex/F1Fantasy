@@ -34,7 +34,7 @@ class ControladorLiga extends Controller
             'descripcion'         => ['nullable', 'string', 'max:500'],
             'max_miembros'        => ['integer', 'min:2', 'max:50'],
             'es_privada'          => ['boolean'],
-            'presupuesto_inicial' => ['integer', 'min:10000000', 'max:200000000'],
+            'presupuesto_inicial' => ['integer', 'min:10000000', 'max:1000000000'],
         ]);
 
         $liga = Liga::create([

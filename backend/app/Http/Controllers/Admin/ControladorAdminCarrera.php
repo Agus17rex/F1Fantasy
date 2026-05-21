@@ -169,37 +169,60 @@ class ControladorAdminCarrera extends Controller
 
         $filas = $resultados->map(fn($r) => [
             'id'                     => $r->id,
-            'piloto'                 => $r->piloto?->nombre . ' ' . $r->piloto?->apellido,
-            'escuderia'              => $r->escuderia?->nombre,
+            'piloto'                 => [
+                'nombre'   => $r->piloto?->nombre,
+                'apellido' => $r->piloto?->apellido,
+                'codigo'   => $r->piloto?->codigo,
+                'foto'     => $r->piloto?->foto,
+                'escuderia'=> $r->escuderia ? [
+                    'color' => $r->escuderia->color,
+                ] : null,
+            ],
+            'escuderia'              => [
+                'nombre' => $r->escuderia?->nombre,
+                'color'  => $r->escuderia?->color,
+                'logo'   => $r->escuderia?->logo,
+            ],
             'posicion_salida'        => $r->posicion_salida,
             'posicion_final'         => $r->posicion_final,
             'posicion_clasificacion' => $r->posicion_clasificacion,
             'estado'                 => $r->estado,
             'vuelta_rapida'          => $r->vuelta_rapida,
-            'piloto_del_dia'         => $r->piloto_del_dia,
             'penalizacion_grid'      => (bool) $r->penalizacion_grid,
             'penalizacion_tiempo'    => (bool) $r->penalizacion_tiempo,
             'puntos_carrera'         => $r->puntos_carrera,
-            'puntos_velocidad'       => $r->puntos_velocidad,
+            'puntos_qualy'           => $r->puntos_qualy,
             'puntos_fantasy'         => $r->puntos_fantasy,
         ]);
 
         // Agrupado por escudería para ver pts de escudería y coche
-        $porEscuderia = $resultados->groupBy('escuderia_id')->map(function ($grupo) use ($reglas) {
+        $porEscuderia = $resultados->groupBy('escuderia_id')->map(function ($grupo) {
             $sumaCarrera = $grupo->sum('puntos_carrera');
-            $sumaQuali   = $grupo->sum(function ($r) use ($reglas) {
-                $ev = 'QUALI_P' . $r->posicion_clasificacion;
-                return ($r->posicion_clasificacion && isset($reglas[$ev])) ? $reglas[$ev]->puntos : 0;
-            });
+            $sumaQualy   = $grupo->sum('puntos_qualy');
+            $esc         = $grupo->first()->escuderia;
+
+            // Coche activo de esta escudería
+            $coche = $esc ? \App\Models\Coche::where('escuderia_id', $esc->id)
+                ->where('activo', true)
+                ->first() : null;
 
             return [
-                'escuderia'     => $grupo->first()->escuderia?->nombre,
+                'escuderia'     => [
+                    'nombre' => $esc?->nombre,
+                    'color'  => $esc?->color,
+                    'logo'   => $esc?->logo,
+                ],
+                'coche'         => $coche ? [
+                    'nombre'   => $coche->nombre,
+                    'foto'     => $coche->foto,
+                    'escuderia'=> ['color' => $esc?->color],
+                ] : null,
                 'suma_carrera'  => $sumaCarrera,
-                'suma_qualy'    => $sumaQuali,
+                'suma_qualy'    => $sumaQualy,
                 'pts_escuderia' => (int) round($sumaCarrera / 2),
-                'pts_coche'     => (int) round($sumaQuali / 2),
+                'pts_coche'     => (int) round($sumaQualy / 2),
             ];
-        })->sortBy('escuderia')->values();
+        })->sortBy('escuderia.nombre')->values();
 
         return response()->json([
             'carrera'       => $carrera->nombre,

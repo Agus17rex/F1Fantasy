@@ -90,20 +90,40 @@
           </div>
         </div>
 
-        <!-- Bonificaciones -->
+        <!-- Bonificaciones de carrera -->
         <div class="card space-y-4">
           <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-xl bg-amber-500/15 flex items-center justify-center text-lg flex-shrink-0">⚡</div>
             <div>
-              <h3 class="font-bold text-white text-sm">Bonificaciones</h3>
-              <p class="text-zinc-500 text-xs">Puntos extra por rendimiento especial</p>
+              <h3 class="font-bold text-white text-sm">Bonificaciones de carrera</h3>
+              <p class="text-zinc-500 text-xs">Puntos extra en carrera · van a puntos_carrera</p>
             </div>
           </div>
           <div class="divide-y divide-zinc-800/60">
-            <div v-for="r in grupos.bonus" :key="r.evento"
+            <div v-for="r in grupos.bonusCarrera" :key="r.evento"
               class="flex items-center justify-between py-2.5">
               <span class="text-zinc-300 text-sm">{{ r.descripcion }}</span>
               <span class="font-bold text-sm tabular-nums min-w-[2.5rem] text-right rounded-lg px-2 py-0.5 text-amber-400 bg-amber-500/10">
+                +{{ r.puntos }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bonus piloto -->
+        <div class="card space-y-4">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-orange-500/15 flex items-center justify-center text-lg flex-shrink-0">🧑‍🦺</div>
+            <div>
+              <h3 class="font-bold text-white text-sm">Bonus piloto</h3>
+              <p class="text-zinc-500 text-xs">Superar al compañero · va directo al total</p>
+            </div>
+          </div>
+          <div class="divide-y divide-zinc-800/60">
+            <div v-for="r in grupos.bonusPiloto" :key="r.evento"
+              class="flex items-center justify-between py-2.5">
+              <span class="text-zinc-300 text-sm">{{ r.descripcion }}</span>
+              <span class="font-bold text-sm tabular-nums min-w-[2.5rem] text-right rounded-lg px-2 py-0.5 text-orange-400 bg-orange-500/10">
                 +{{ r.puntos }}
               </span>
             </div>
@@ -145,8 +165,8 @@
           </p>
           <div class="flex flex-wrap gap-2">
             <span v-for="(pts, pos) in qualyBadges" :key="pos"
-              class="bg-blue-500/10 border border-blue-500/25 text-blue-300 text-xs px-2.5 py-1 rounded-full font-semibold">
-              {{ pos }} → +{{ pts }}
+              class="bg-blue-500/10 border border-blue-500/25 text-blue-300 text-xs px-2 py-0.5 rounded-full font-semibold">
+              {{ pos }} +{{ pts }}
             </span>
           </div>
         </div>
@@ -178,13 +198,17 @@ const reglas   = ref([])
 const cargando = ref(false)
 
 const qualyBadges = {
-  'Pole (P1)': 10, 'P2': 9, 'P3': 8, 'P4': 7, 'P5': 6
+  'Pole (P1)': 10, 'P2': 9, 'P3': 8, 'P4': 7, 'P5': 6,
+  'P6': 5, 'P7': 4, 'P8': 3, 'P9': 2, 'P10': 1,
 }
+
+const EVENTOS_BONUS_PILOTO = ['BEATS_TEAMMATE', 'BEATS_TEAMMATE_QUALY']
 
 const grupos = computed(() => {
   const carrera      = []
   const qualy        = []
-  const bonus        = []
+  const bonusCarrera = []
+  const bonusPiloto  = []
   const penalizacion = []
 
   for (const r of reglas.value) {
@@ -195,17 +219,20 @@ const grupos = computed(() => {
       qualy.push(r)
     } else if (r.puntos < 0) {
       penalizacion.push(r)
+    } else if (EVENTOS_BONUS_PILOTO.includes(ev)) {
+      bonusPiloto.push(r)
     } else {
-      bonus.push(r)
+      bonusCarrera.push(r)
     }
   }
 
   carrera.sort((a, b) => b.puntos - a.puntos)
   qualy.sort((a, b) => b.puntos - a.puntos)
-  bonus.sort((a, b) => b.puntos - a.puntos)
+  bonusCarrera.sort((a, b) => b.puntos - a.puntos)
+  bonusPiloto.sort((a, b) => b.puntos - a.puntos)
   penalizacion.sort((a, b) => a.puntos - b.puntos)
 
-  return { carrera, qualy, bonus, penalizacion }
+  return { carrera, qualy, bonusCarrera, bonusPiloto, penalizacion }
 })
 
 onMounted(async () => {

@@ -24,21 +24,38 @@ class ServicioPuntuacion
 
     /**
      * Calcula los puntos fantasy de un piloto en una carrera, separando:
-     *  - puntos_carrera   → posición final + penalizaciones de estado + penalizaciones manuales
-     *  - puntos_velocidad → qualy + vuelta rápida + piloto del día + adelantamientos
-     *  - puntos_fantasy   = puntos_carrera + puntos_velocidad (total individual)
+     *  - puntos_carrera → posición final + vuelta rápida + adelantamientos
+     *                     + penalizaciones de estado + penalizaciones manuales
+     *  - puntos_qualy   → posición en clasificación (QUALI_P1 a QUALI_P10)
+     *  - puntos_fantasy = puntos_carrera + puntos_qualy (total individual)
      *
-     * NO incluye BEATS_TEAMMATE (requiere comparar con el compañero → se calcula en post-proceso)
+     * NO incluye BEATS_TEAMMATE ni BEATS_TEAMMATE_QUALY
+     * (requieren comparar con el compañero → se calculan en post-proceso)
      */
     public function calcularPuntosPiloto(ResultadoCarrera $resultado): int
     {
-        $puntosCarrera   = 0;
-        $puntosVelocidad = 0;
+        $puntosCarrera = 0;
+        $puntosQualy   = 0;
 
         // ── Posición final de la carrera ──────────────────────────────────────
         $evLlegada = 'FINISH_P' . $resultado->posicion_final;
         if ($resultado->posicion_final && isset($this->reglas[$evLlegada])) {
             $puntosCarrera += $this->reglas[$evLlegada]->puntos;
+        }
+
+        // ── Vuelta rápida ─────────────────────────────────────────────────────
+        if ($resultado->vuelta_rapida && isset($this->reglas['FASTEST_LAP'])) {
+            $puntosCarrera += $this->reglas['FASTEST_LAP']->puntos;
+        }
+
+        // ── Adelantamientos (posiciones ganadas en carrera) ───────────────────
+        if ($resultado->posicion_salida && $resultado->posicion_final) {
+            $ganadas = $resultado->posicion_salida - $resultado->posicion_final;
+            if ($ganadas >= 5 && isset($this->reglas['OVERTAKES_5'])) {
+                $puntosCarrera += $this->reglas['OVERTAKES_5']->puntos;
+            } elseif ($ganadas >= 3 && isset($this->reglas['OVERTAKES_3'])) {
+                $puntosCarrera += $this->reglas['OVERTAKES_3']->puntos;
+            }
         }
 
         // ── Penalizaciones por estado ─────────────────────────────────────────
@@ -61,40 +78,17 @@ class ServicioPuntuacion
             $puntosCarrera += $this->reglas['PENALTY_TIME']->puntos;
         }
 
-        // ── Posición de clasificación (qualy) ─────────────────────────────────
+        // ── Posición de clasificación (qualy P1-P10) ──────────────────────────
         $evQuali = 'QUALI_P' . $resultado->posicion_clasificacion;
         if ($resultado->posicion_clasificacion && isset($this->reglas[$evQuali])) {
-            $puntosVelocidad += $this->reglas[$evQuali]->puntos;
+            $puntosQualy += $this->reglas[$evQuali]->puntos;
         }
 
-        // ── Vuelta rápida ─────────────────────────────────────────────────────
-        if ($resultado->vuelta_rapida && isset($this->reglas['FASTEST_LAP'])) {
-            $puntosVelocidad += $this->reglas['FASTEST_LAP']->puntos;
-        }
-
-        // ── Piloto del día ────────────────────────────────────────────────────
-        if ($resultado->piloto_del_dia && isset($this->reglas['DRIVER_OF_DAY'])) {
-            $puntosVelocidad += $this->reglas['DRIVER_OF_DAY']->puntos;
-        }
-
-        // ── Adelantamientos (posiciones ganadas en carrera) ───────────────────
-        // Se usan posicion_salida y posicion_final. Si ambas existen y se ganaron
-        // posiciones, se aplica el bonus correspondiente (son mutuamente exclusivos:
-        // 5+ posiciones da el bonus mayor; 3-4 posiciones da el menor).
-        if ($resultado->posicion_salida && $resultado->posicion_final) {
-            $ganadas = $resultado->posicion_salida - $resultado->posicion_final;
-            if ($ganadas >= 5 && isset($this->reglas['OVERTAKES_5'])) {
-                $puntosVelocidad += $this->reglas['OVERTAKES_5']->puntos;
-            } elseif ($ganadas >= 3 && isset($this->reglas['OVERTAKES_3'])) {
-                $puntosVelocidad += $this->reglas['OVERTAKES_3']->puntos;
-            }
-        }
-
-        $total = $puntosCarrera + $puntosVelocidad;
+        $total = $puntosCarrera + $puntosQualy;
 
         $resultado->update([
             'puntos_carrera'    => $puntosCarrera,
-            'puntos_velocidad'  => $puntosVelocidad,
+            'puntos_qualy'      => $puntosQualy,
             'puntos_fantasy'    => $total,
             'puntos_calculados' => true,
         ]);
@@ -103,20 +97,18 @@ class ServicioPuntuacion
     }
 
     /**
-     * Post-proceso: otorga +BEATS_TEAMMATE al piloto que supera a su compañero en carrera.
-     * Reglas:
-     *  - Ambos deben tener posicion_final (si uno abandonó sin llegar al final, su posicion_final
-     *    puede estar registrada o no según la API).
-     *  - El piloto con posicion_final más baja (mejor posición) gana.
-     *  - Si sólo uno tiene posicion_final, el que terminó gana.
-     *  - Si ninguno tiene posicion_final, no se otorga el bonus.
+     * Post-proceso: otorga BEATS_TEAMMATE en carrera y BEATS_TEAMMATE_QUALY en clasificación.
+     *
+     * Carrera: el piloto con mejor posicion_final gana +3 en puntos_carrera.
+     *   - Si solo uno terminó (posicion_final no null), ese gana.
+     *   - Si ninguno terminó, no hay bonus.
+     *
+     * Qualy: el piloto con mejor posicion_clasificacion gana +3 en puntos_qualy.
+     *   - Si solo uno tiene posicion_clasificacion, ese gana.
+     *   - Si ninguno tiene qualy, no hay bonus.
      */
     public function aplicarBeatsTeammate(Carrera $carrera): void
     {
-        if (!isset($this->reglas['BEATS_TEAMMATE'])) return;
-
-        $bonus = $this->reglas['BEATS_TEAMMATE']->puntos;
-
         // Recargar resultados frescos de la BD (ya tienen los puntos base calculados)
         $resultadosPorEscuderia = ResultadoCarrera::where('carrera_id', $carrera->id)
             ->get()
@@ -126,23 +118,44 @@ class ServicioPuntuacion
             // Solo aplica cuando hay exactamente 2 pilotos de la escudería
             if ($resultados->count() !== 2) continue;
 
-            /** @var ResultadoCarrera $r1 */
-            /** @var ResultadoCarrera $r2 */
             [$r1, $r2] = [$resultados[0], $resultados[1]];
 
-            $ganador = null;
-            if ($r1->posicion_final !== null && $r2->posicion_final !== null) {
-                $ganador = $r1->posicion_final < $r2->posicion_final ? $r1 : $r2;
-            } elseif ($r1->posicion_final !== null) {
-                $ganador = $r1; // r1 terminó, r2 no
-            } elseif ($r2->posicion_final !== null) {
-                $ganador = $r2; // r2 terminó, r1 no
-            }
-            // Si ninguno tiene posicion_final → no hay ganador
+            // ── Superar compañero en CARRERA → puntos_carrera ────────────────
+            if (isset($this->reglas['BEATS_TEAMMATE'])) {
+                $bonusCarrera = $this->reglas['BEATS_TEAMMATE']->puntos;
+                $ganadorCarrera = null;
 
-            if ($ganador) {
-                $ganador->increment('puntos_velocidad', $bonus);
-                $ganador->increment('puntos_fantasy',   $bonus);
+                if ($r1->posicion_final !== null && $r2->posicion_final !== null) {
+                    $ganadorCarrera = $r1->posicion_final < $r2->posicion_final ? $r1 : $r2;
+                } elseif ($r1->posicion_final !== null) {
+                    $ganadorCarrera = $r1;
+                } elseif ($r2->posicion_final !== null) {
+                    $ganadorCarrera = $r2;
+                }
+
+                if ($ganadorCarrera) {
+                    // Bonus de piloto: va directo a puntos_fantasy, no a puntos_carrera
+                    $ganadorCarrera->increment('puntos_fantasy', $bonusCarrera);
+                }
+            }
+
+            // ── Superar compañero en QUALY → bonus de piloto ─────────────────
+            if (isset($this->reglas['BEATS_TEAMMATE_QUALY'])) {
+                $bonusQualy = $this->reglas['BEATS_TEAMMATE_QUALY']->puntos;
+                $ganadorQualy = null;
+
+                if ($r1->posicion_clasificacion !== null && $r2->posicion_clasificacion !== null) {
+                    $ganadorQualy = $r1->posicion_clasificacion < $r2->posicion_clasificacion ? $r1 : $r2;
+                } elseif ($r1->posicion_clasificacion !== null) {
+                    $ganadorQualy = $r1;
+                } elseif ($r2->posicion_clasificacion !== null) {
+                    $ganadorQualy = $r2;
+                }
+
+                if ($ganadorQualy) {
+                    // Bonus de piloto: va directo a puntos_fantasy, no a puntos_qualy
+                    $ganadorQualy->increment('puntos_fantasy', $bonusQualy);
+                }
             }
         }
     }
